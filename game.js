@@ -405,6 +405,45 @@ function updateGrowth() {
   if (count > 0) addLog(`${count} ağaç kesime hazır hale geldi.`);
 }
 
+function treeMarkup(plot, visual) {
+  if (plot.state === "empty") {
+    return `
+      <svg class="tree-svg" viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="29" y="34" width="6" height="20" rx="3" fill="#8b582e"/>
+        <path d="M32 34c-8-2-14-8-14-15 8 0 14 5 14 15Z" fill="#62b66e"/>
+        <path d="M32 34c8-2 14-8 14-15-8 0-14 5-14 15Z" fill="#79c783"/>
+      </svg>`;
+  }
+
+  if (plot.state === "ready") {
+    return `
+      <svg class="tree-svg" viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="27" y="34" width="10" height="25" rx="3" fill="#83512c"/>
+        <circle cx="32" cy="21" r="16" fill="#2f7a43"/>
+        <circle cx="20" cy="28" r="12" fill="#398c4f"/>
+        <circle cx="44" cy="28" r="12" fill="#3d9353"/>
+        <circle cx="32" cy="12" r="12" fill="#4da55f"/>
+      </svg>`;
+  }
+
+  const small = (visual.ratio ?? 0) < .4;
+  return small
+    ? `
+      <svg class="tree-svg" viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="29" y="35" width="6" height="20" rx="3" fill="#8b582e"/>
+        <circle cx="32" cy="29" r="12" fill="#4da65f"/>
+        <circle cx="25" cy="32" r="8" fill="#61b971"/>
+        <circle cx="40" cy="32" r="8" fill="#5ab06a"/>
+      </svg>`
+    : `
+      <svg class="tree-svg" viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="28" y="34" width="8" height="23" rx="3" fill="#87532c"/>
+        <circle cx="32" cy="23" r="15" fill="#39894e"/>
+        <circle cx="21" cy="29" r="10" fill="#4b9e5c"/>
+        <circle cx="43" cy="29" r="10" fill="#4fa662"/>
+      </svg>`;
+}
+
 function renderPlots() {
   els.fieldGrid.innerHTML = "";
 
@@ -416,7 +455,7 @@ function renderPlots() {
     button.setAttribute("aria-label", `${plot.id + 1}. arazi: ${visual.label}`);
     button.innerHTML = `
       <span class="plot-content">
-        <span class="plot-icon">${visual.icon}</span>
+        ${treeMarkup(plot, visual)}
         <span class="plot-label">${visual.label}</span>
       </span>
       ${plot.state === "growing" ? `
@@ -525,7 +564,7 @@ els.upgradeLodgingBtn.addEventListener("click", upgradeLodging);
 els.resetBtn.addEventListener("click", resetGame);
 
 if (!state.logsHistory.length) {
-  addLog("Ahşap Tycoon v0.3 başladı. İlk fidanını dik.");
+  addLog("Ahşap Tycoon v0.4 başladı. İlk fidanını dik.");
 }
 
 render();

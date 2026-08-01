@@ -1,33 +1,33 @@
-# Ahşap Tycoon v0.3
+# Ahşap Tycoon v0.4
 
-Gerçek Tycoon görünümüne geçilen ilk görsel sürüm.
+Bu sürümde metin/emoji ağırlıklı görünüm kaldırıldı ve gerçek oyun sahnesi yaklaşımına geçildi.
 
-## Bu sürümde
+## Görsel yenilikler
 
-- Yeni üst kaynak çubuğu
-- Harita üzerinde fabrika, depo ve işçi lojmanı
-- İzometrik arazi hissi
-- Hareketli ağaçlar, fabrika bacası ve kamyon animasyonu
-- Elle kütük üretimi
-- Otomatik kütük üretimini açma/kapatma
-- İşçilerin otomatik dikim, kesim ve yeniden ekim yapması
-- Otomatik işçi dağılımı
-- Fabrika üretim animasyonu
+- SVG çizimli gerçek fabrika binası
+- SVG çizimli depo binası
+- SVG çizimli işçi lojmanı
+- Emoji yerine çizimli kaynak ikonları
+- SVG ağaçlar
+- Hareket eden işçiler
+- Fabrikaya taşınan kütükler
+- Çalışan testere hattı
+- Fabrika bacası duman animasyonu
+- Yolda hareket eden kamyon
+- Modern yönetim paneli
+- Mobil uyumlu tasarım
+
+## Oynanış
+
+- Manuel ve otomatik fidan dikimi
+- Otomatik ağaç kesimi
+- Otomatik yeniden ekim
+- Manuel kütük üretimi
+- İşçi, lojman ve fabrika yükseltmeleri
+- Kütükten kereste üretimi
 - Kereste satışı
-- Lojman ve fabrika seviye sistemi
-- Tarayıcıda otomatik kayıt
+- Otomatik kayıt
 
-## GitHub'a güncelleme
+## GitHub'a yükleme
 
-ZIP içindeki şu dört dosyayı mevcut depondaki dosyaların üzerine yükle:
-
-- `index.html`
-- `style.css`
-- `game.js`
-- `README.md`
-
-GitHub Pages birkaç dakika içinde yeni sürümü yayınlar.
-
-## Test
-
-ZIP dosyasını açıp `index.html` dosyasına çift tıklayarak bilgisayarında doğrudan oynayabilirsin.
+ZIP içindeki `index.html`, `style.css`, `game.js` ve `README.md` dosyalarını mevcut dosyaların üzerine yükle.
