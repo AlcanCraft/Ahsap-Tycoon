@@ -7,6 +7,6 @@
   - service_role anahtarını ASLA GitHub'a yüklemeyin.
 */
 window.AHSAP_CONFIG = {
-  SUPABASE_URL: "https://YOUR-PROJECT.supabase.co",
-  SUPABASE_ANON_KEY: "YOUR-PUBLISHABLE-ANON-KEY"
+  SUPABASE_URL: "https://xcgsomgdcxanyrjtzbut.supabase.co/rest/v1/",
+  SUPABASE_ANON_KEY: "Alcanalcan123456"
 };
