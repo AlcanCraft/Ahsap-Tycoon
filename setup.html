@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Firebase Kurulum Sihirbazı</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="auth.css" />
+  <link rel="stylesheet" href="setup.css" />
+</head>
+<body class="setup-body">
+  <main class="setup-shell">
+    <header class="setup-header">
+      <div><span class="kicker">AHŞAP TYCOON v1.6</span><h1>Firebase Kurulum Sihirbazı</h1><p>Ödeme bilgisi istemeyen Spark planına uygun kurulum.</p></div>
+      <span id="setupStateBadge" class="status-pill">1 / 4</span>
+    </header>
+
+    <section class="setup-progress">
+      <div class="setup-progress-bar"><span id="setupProgressFill"></span></div>
+      <div class="setup-step-labels"><span>Web uygulaması</span><span>Yapılandırma</span><span>Hizmetler</span><span>Dosyalar</span></div>
+    </section>
+
+    <section class="setup-card active" data-step="1">
+      <div class="setup-card-heading"><div class="setup-number">1</div><div><span class="kicker">WEB UYGULAMASI</span><h2>Firebase’de web uygulaması ekle</h2></div></div>
+      <p class="setup-copy">Firebase proje ana sayfasında <strong>&lt;/&gt;</strong> simgesine bas. Uygulama adı olarak <strong>Ahsap Tycoon Web</strong> yaz ve kaydet.</p>
+      <div class="setup-actions">
+        <a class="auth-primary-button link-button" target="_blank" href="https://console.firebase.google.com/">Firebase panelini aç</a>
+        <button class="auth-secondary-button next-step">Web uygulamasını ekledim</button>
+      </div>
+    </section>
+
+    <section class="setup-card" data-step="2">
+      <div class="setup-card-heading"><div class="setup-number">2</div><div><span class="kicker">YAPILANDIRMA</span><h2>Firebase kodunu yapıştır</h2></div></div>
+      <p class="setup-copy">Firebase’in gösterdiği <strong>firebaseConfig</strong> bölümünün tamamını aşağıya yapıştır.</p>
+      <label class="setup-field"><span>Firebase yapılandırma kodu</span><textarea id="firebaseConfigInput" rows="12" placeholder='const firebaseConfig = { apiKey: "...", authDomain: "...", projectId: "..." };'></textarea></label>
+      <label class="setup-field"><span>Yönetici e-posta adresin</span><input id="adminEmailInput" type="email" placeholder="senin@email.com" /></label>
+      <div id="setupMessage" class="auth-message"></div>
+      <div class="setup-actions split"><button class="auth-secondary-button previous-step">Geri</button><button id="parseConfigBtn" class="auth-primary-button">Bilgileri kontrol et</button></div>
+    </section>
+
+    <section class="setup-card" data-step="3">
+      <div class="setup-card-heading"><div class="setup-number">3</div><div><span class="kicker">HİZMETLER</span><h2>İki hizmeti aç</h2></div></div>
+      <div class="simple-task"><strong>Authentication</strong><span>Build → Authentication → Get started → Email/Password → Etkinleştir</span></div>
+      <div class="simple-task"><strong>Firestore Database</strong><span>Build → Firestore Database → Create database → Standard → Production mode</span></div>
+      <label class="setup-check"><input id="servicesCheck" type="checkbox" /><span>İki hizmeti de açtım</span></label>
+      <div class="setup-actions split"><button class="auth-secondary-button previous-step">Geri</button><button id="servicesNextBtn" class="auth-primary-button">Devam et</button></div>
+    </section>
+
+    <section class="setup-card" data-step="4">
+      <div class="setup-card-heading"><div class="setup-number">4</div><div><span class="kicker">HAZIR DOSYALAR</span><h2>İki dosyayı indir</h2></div></div>
+      <p class="setup-copy">İlk dosyayı GitHub’a yükle. İkinci dosyanın içeriğini Firestore → Rules bölümüne yapıştırıp Publish düğmesine bas.</p>
+      <div class="setup-actions">
+        <button id="downloadConfigBtn" class="auth-primary-button">firebase-config.js indir</button>
+        <button id="downloadRulesBtn" class="auth-secondary-button">firestore.rules indir</button>
+        <a class="auth-secondary-button link-button" href="index.html">Giriş ekranına dön</a>
+      </div>
+    </section>
+  </main>
+  <script src="setup.js"></script>
+</body>
+</html>

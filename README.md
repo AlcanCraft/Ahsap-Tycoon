@@ -1,4 +1,4 @@
-# Ahşap Tycoon v1.4
+# Ahşap Tycoon v1.6
 
 Bu sürümde metin/emoji ağırlıklı görünüm kaldırıldı ve gerçek oyun sahnesi yaklaşımına geçildi.
 
@@ -159,18 +159,11 @@ Kesimden sonra kütükler yaklaşık 3 saniye arazide görünür. Sonra otomatik
 - Kütük ve kereste satışları ayrı fiyatlarla devam eder.
 
 
-## v1.4 kullanıcı, bulut kayıt ve yönetici sistemi
+## v1.6 Firebase kullanıcı sistemi
 
-- E-posta ve parola ile kayıt olma
-- E-posta ve parola ile giriş yapma
-- Kullanıcı adı belirleme
-- Her oyuncu için ayrı bulut oyun kaydı
-- Farklı cihazdan kaldığı yerden devam etme
-- Hesap ekranı
-- Güvenli çıkış
+- Firebase Authentication
+- Firestore bulut kayıt
+- Kullanıcı adı, e-posta ve parola
 - Yönetici paneli
-- Oyuncu listesi ve oyun ilerleme özetleri
-- Supabase Row Level Security politikaları
-- Yönetici yetkisinin veritabanından verilmesi
-
-Kurulum için `KURULUM.md` dosyasını okuyun.
+- Görsel kurulum sihirbazı
+- Ödeme bilgisi gerektirmeyen Spark plan uyumu

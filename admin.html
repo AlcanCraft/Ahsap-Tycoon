@@ -3,66 +3,35 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0b2018" />
   <title>Ahşap Tycoon - Yönetici Paneli</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="auth.css" />
 </head>
 <body class="admin-body">
   <header class="admin-header">
-    <div>
-      <span class="kicker">ALCANCRAFT</span>
-      <h1>Yönetici Paneli</h1>
-    </div>
-    <nav>
-      <a href="index.html">Hesabım</a>
-      <a href="game.html">Oyuna dön</a>
-      <button id="adminLogoutBtn" type="button">Çıkış</button>
-    </nav>
+    <div><span class="kicker">ALCANCRAFT</span><h1>Yönetici Paneli</h1></div>
+    <nav><a href="index.html">Hesabım</a><a href="game.html">Oyuna dön</a><button id="adminLogoutBtn">Çıkış</button></nav>
   </header>
-
   <main class="admin-main">
     <section class="admin-summary">
       <article><span>Toplam oyuncu</span><strong id="totalPlayers">0</strong></article>
       <article><span>Kayıtlı oyun</span><strong id="totalSaves">0</strong></article>
       <article><span>Son 24 saat aktif</span><strong id="activePlayers">0</strong></article>
     </section>
-
     <section class="admin-panel-card">
       <div class="admin-panel-heading">
-        <div>
-          <span class="kicker">OYUNCU KAYITLARI</span>
-          <h2>Kullanıcılar ve ilerlemeleri</h2>
-        </div>
-        <button id="refreshAdminBtn" type="button">Yenile</button>
+        <div><span class="kicker">OYUNCULAR</span><h2>Kullanıcılar ve ilerlemeleri</h2></div>
+        <button id="refreshAdminBtn">Yenile</button>
       </div>
-
       <div class="admin-table-wrap">
         <table class="admin-table">
-          <thead>
-            <tr>
-              <th>Kullanıcı</th>
-              <th>E-posta</th>
-              <th>Kayıt tarihi</th>
-              <th>Son görülme</th>
-              <th>Para</th>
-              <th>Kütük</th>
-              <th>Kereste</th>
-              <th>İşçi</th>
-              <th>Parsel</th>
-              <th>Son kayıt</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Kullanıcı</th><th>E-posta</th><th>Kayıt</th><th>Son görülme</th><th>Para</th><th>Kütük</th><th>Kereste</th><th>İşçi</th><th>Parsel</th><th>Son kayıt</th></tr></thead>
           <tbody id="playersTableBody"></tbody>
         </table>
       </div>
-
       <div id="adminMessage" class="auth-message"></div>
     </section>
   </main>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config.js"></script>
-  <script src="admin.js"></script>
+  <script type="module" src="firebase-admin-panel.js"></script>
 </body>
 </html>

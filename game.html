@@ -45,7 +45,7 @@
 
       <div class="account-actions">
         <span id="currentPlayerName" class="current-player-name">Oyuncu</span>
-        <a href="index.html" class="account-link">Hesabım</a>
+        <a class="account-link" href="index.html">Hesabım</a>
         <button id="logoutGameBtn" class="reset-button" type="button">Çıkış</button>
       </div>
     </header>
@@ -366,7 +366,7 @@
     <section class="update-dialog" role="dialog" aria-modal="true" aria-labelledby="updateTitle">
       <div class="update-header">
         <div>
-          <span class="kicker">SÜRÜM 1.4</span>
+          <span class="kicker">SÜRÜM 1.6</span>
           <h2 id="updateTitle">Bilgi Ekranı</h2>
           <p>Oyuna eklenen son yenilikler</p>
         </div>
@@ -448,8 +448,6 @@
   </div>
 
   <div id="toast" class="toast"></div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config.js"></script>
-  <script src="cloud-sync.js"></script>
+  <script type="module" src="firebase-game.js"></script>
 </body>
 </html>
