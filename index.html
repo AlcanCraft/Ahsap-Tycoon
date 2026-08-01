@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#163a2a" />
+  <title>Ahşap Tycoon v0.1</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">AHŞAP TYCOON</p>
+      <h1>Orman İşletmesi</h1>
+    </div>
+    <button id="resetBtn" class="ghost-button" type="button">Oyunu sıfırla</button>
+  </header>
+
+  <main class="layout">
+    <section class="game-area panel">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">ARAZİ</p>
+          <h2>Fidanlık</h2>
+        </div>
+        <div class="legend">
+          <span>🟫 Boş</span>
+          <span>🌱 Fidan</span>
+          <span>🌲 Hazır</span>
+        </div>
+      </div>
+
+      <div id="fieldGrid" class="field-grid" aria-label="Fidanlık alanı"></div>
+
+      <div class="hint">
+        Boş araziye tıklayarak fidan dik. Ağaç olgunlaşınca tekrar tıklayıp kes.
+      </div>
+    </section>
+
+    <aside class="sidebar">
+      <section class="panel resources">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">İŞLETME</p>
+            <h2>Kaynaklar</h2>
+          </div>
+          <span id="levelBadge" class="badge">Seviye 1</span>
+        </div>
+
+        <div class="resource-grid">
+          <article class="resource-card">
+            <span>💰 Para</span>
+            <strong id="moneyValue">0 ₺</strong>
+          </article>
+          <article class="resource-card">
+            <span>🪵 Kütük</span>
+            <strong id="logValue">0 / 100</strong>
+          </article>
+          <article class="resource-card">
+            <span>📦 Kereste</span>
+            <strong id="lumberValue">0 / 100</strong>
+          </article>
+          <article class="resource-card">
+            <span>👷 İşçi</span>
+            <strong id="workerValue">0 / 0</strong>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">ÜRETİM</p>
+            <h2>Kereste Fabrikası</h2>
+          </div>
+          <span id="factoryLevel" class="badge">Sv. 1</span>
+        </div>
+
+        <div class="production-status">
+          <div>
+            <span>İşleme süresi</span>
+            <strong id="processTime">10 sn</strong>
+          </div>
+          <div>
+            <span>Gerekli işçi</span>
+            <strong id="factoryWorkers">2</strong>
+          </div>
+        </div>
+
+        <div class="progress-shell" aria-label="Fabrika üretim ilerlemesi">
+          <div id="factoryProgress" class="progress-bar"></div>
+        </div>
+        <p id="factoryStatus" class="status-text">Fabrika bekliyor.</p>
+
+        <div class="button-row">
+          <button id="processBtn" class="primary-button" type="button">1 kütüğü işle</button>
+          <button id="upgradeFactoryBtn" class="secondary-button" type="button">Fabrikayı yükselt</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">ÇALIŞANLAR</p>
+            <h2>İşçi Lojmanı</h2>
+          </div>
+          <span id="lodgingLevel" class="badge">Sv. 1</span>
+        </div>
+
+        <div class="production-status">
+          <div>
+            <span>Kapasite</span>
+            <strong id="lodgingCapacity">10</strong>
+          </div>
+          <div>
+            <span>Boş yer</span>
+            <strong id="lodgingFree">10</strong>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button id="hireBtn" class="primary-button" type="button">İşçi al</button>
+          <button id="upgradeLodgingBtn" class="secondary-button" type="button">Lojmanı yükselt</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">SATIŞ</p>
+            <h2>Kereste Pazarı</h2>
+          </div>
+          <span class="badge">25 ₺ / adet</span>
+        </div>
+        <button id="sellBtn" class="sell-button" type="button">Tüm keresteyi sat</button>
+      </section>
+    </aside>
+
+    <section class="panel log-panel">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">GÜNLÜK</p>
+          <h2>İşletme kayıtları</h2>
+        </div>
+      </div>
+      <div id="eventLog" class="event-log" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="game.js"></script>
+</body>
+</html>
