@@ -1,10 +1,11 @@
 export const firebaseConfig = {
-  apiKey: "FIREBASE_API_KEY",
-  authDomain: "FIREBASE_AUTH_DOMAIN",
-  projectId: "FIREBASE_PROJECT_ID",
-  storageBucket: "FIREBASE_STORAGE_BUCKET",
-  messagingSenderId: "FIREBASE_MESSAGING_SENDER_ID",
-  appId: "FIREBASE_APP_ID"
+  apiKey: "AIzaSyBTBb68K2BB1KCK9JGW77TmGe1PSEc-FLU",
+  authDomain: "ahsap-tycoon.firebaseapp.com",
+  projectId: "ahsap-tycoon",
+  storageBucket: "ahsap-tycoon.firebasestorage.app",
+  messagingSenderId: "434071023651",
+  appId: "1:434071023651:web:94a3245db9c043daa54196",
+  measurementId: "G-ML8MFHF5LC"
 };
 
-export const ADMIN_EMAIL = "YONETICI_EMAIL_ADRESI";
+export const ADMIN_EMAIL = "a.irfanalcan@hotmail.com";

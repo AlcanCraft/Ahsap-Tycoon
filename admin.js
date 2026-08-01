@@ -1,97 +1,91 @@
-(() => {
-  "use strict";
+import {
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
-  const cfg = window.AHSAP_CONFIG || {};
-  const message = document.querySelector("#adminMessage");
+import {
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-  function setMessage(text, type = "") {
-    message.textContent = text;
-    message.className = `auth-message ${type}`;
-  }
+import { auth, db } from "./firebase-service.js";
+import { ADMIN_EMAIL } from "./firebase-config.js";
 
-  if (!cfg.SUPABASE_URL || cfg.SUPABASE_URL.includes("YOUR-PROJECT")) {
-    setMessage("config.js içindeki Supabase ayarları eksik.", "error");
-    return;
-  }
+const tbody = document.querySelector("#playersTableBody");
+const message = document.querySelector("#adminMessage");
 
-  const client = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+function cell(value = "—") {
+  const td = document.createElement("td");
+  td.textContent = value ?? "—";
+  return td;
+}
 
-  function cell(value = "—") {
-    const td = document.createElement("td");
-    td.textContent = value ?? "—";
-    return td;
-  }
+async function loadPlayers() {
+  message.textContent = "Kayıtlar yükleniyor...";
 
-  async function loadPlayers() {
-    setMessage("Kayıtlar yükleniyor...");
+  try {
+    const usersSnap = await getDocs(collection(db, "users"));
+    const savesSnap = await getDocs(collection(db, "gameSaves"));
+    const saves = new Map(savesSnap.docs.map(docSnap => [docSnap.id, docSnap.data()]));
 
-    const { data: { session } } = await client.auth.getSession();
-    if (!session?.user) {
-      location.href = "index.html";
-      return;
-    }
-
-    const { data: myProfile } = await client
-      .from("profiles")
-      .select("is_admin")
-      .eq("user_id", session.user.id)
-      .single();
-
-    if (!myProfile?.is_admin) {
-      setMessage("Bu sayfaya erişim yetkiniz yok.", "error");
-      return;
-    }
-
-    const { data: profiles, error: profilesError } = await client
-      .from("profiles")
-      .select("user_id,username,email,created_at,last_seen_at")
-      .order("created_at", { ascending: false });
-
-    if (profilesError) return setMessage(profilesError.message, "error");
-
-    const { data: saves, error: savesError } = await client
-      .from("game_saves")
-      .select("user_id,save_data,updated_at");
-
-    if (savesError) return setMessage(savesError.message, "error");
-
-    const savesByUser = new Map((saves || []).map(save => [save.user_id, save]));
-    const tbody = document.querySelector("#playersTableBody");
     tbody.innerHTML = "";
 
-    for (const profile of profiles || []) {
-      const save = savesByUser.get(profile.user_id);
-      const state = save?.save_data || {};
+    for (const userDoc of usersSnap.docs) {
+      const user = userDoc.data();
+      const save = saves.get(userDoc.id) || {};
+      const state = save.saveData || {};
+
       const tr = document.createElement("tr");
       tr.append(
-        cell(profile.username),
-        cell(profile.email),
-        cell(new Date(profile.created_at).toLocaleString("tr-TR")),
-        cell(profile.last_seen_at ? new Date(profile.last_seen_at).toLocaleString("tr-TR") : "—"),
-        cell(state.money ?? 0),
-        cell(state.logs ?? 0),
-        cell(state.lumber ?? 0),
-        cell(state.workers ?? 0),
-        cell(Array.isArray(state.plots) ? state.plots.length : 16),
-        cell(save?.updated_at ? new Date(save.updated_at).toLocaleString("tr-TR") : "Kayıt yok")
+        cell(user.username),
+        cell(user.email),
+        cell(user.createdAt?.toDate?.().toLocaleString("tr-TR") || "—"),
+        cell(user.lastSeenAt?.toDate?.().toLocaleString("tr-TR") || "—"),
+        cell(state.money ?? save.money ?? 0),
+        cell(state.logs ?? save.logs ?? 0),
+        cell(state.lumber ?? save.lumber ?? 0),
+        cell(state.workers ?? save.workers ?? 0),
+        cell(Array.isArray(state.plots) ? state.plots.length : save.plots ?? 16),
+        cell(save.updatedAt?.toDate?.().toLocaleString("tr-TR") || "Kayıt yok")
       );
+
       tbody.appendChild(tr);
     }
 
-    const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
-    document.querySelector("#totalPlayers").textContent = profiles?.length || 0;
-    document.querySelector("#totalSaves").textContent = saves?.length || 0;
-    document.querySelector("#activePlayers").textContent =
-      (profiles || []).filter(p => p.last_seen_at && new Date(p.last_seen_at).getTime() >= dayAgo).length;
+    const dayAgo = Date.now() - 86_400_000;
 
-    setMessage("Oyuncu kayıtları güncel.", "success");
+    document.querySelector("#totalPlayers").textContent = usersSnap.size;
+    document.querySelector("#totalSaves").textContent = savesSnap.size;
+    document.querySelector("#activePlayers").textContent =
+      usersSnap.docs.filter(docSnap =>
+        docSnap.data().lastSeenAt?.toMillis?.() >= dayAgo
+      ).length;
+
+    message.textContent = "Oyuncu kayıtları güncel.";
+    message.className = "auth-message success";
+  } catch (error) {
+    message.textContent = error.message;
+    message.className = "auth-message error";
+  }
+}
+
+document.querySelector("#refreshAdminBtn").addEventListener("click", loadPlayers);
+document.querySelector("#adminLogoutBtn").addEventListener("click", async () => {
+  await signOut(auth);
+  location.href = "index.html";
+});
+
+onAuthStateChanged(auth, user => {
+  if (!user) {
+    location.href = "index.html";
+    return;
   }
 
-  document.querySelector("#refreshAdminBtn").addEventListener("click", loadPlayers);
-  document.querySelector("#adminLogoutBtn").addEventListener("click", async () => {
-    await client.auth.signOut();
-    location.href = "index.html";
-  });
+  if (user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+    message.textContent = "Bu sayfaya erişim yetkin yok.";
+    message.className = "auth-message error";
+    return;
+  }
 
   loadPlayers();
-})();
+});

@@ -1,4 +1,4 @@
-# Ahşap Tycoon v2.0
+# Ahşap Tycoon v2.1 — Tek Klasör Sürümü
 
 Ahşap Tycoon'un kullanıcı hesapları, Firebase bulut kaydı ve ölçeklenebilir klasör yapısı bulunan yeni temel sürümü.
 
@@ -34,3 +34,29 @@ Ahşap Tycoon'un kullanıcı hesapları, Firebase bulut kaydı ve ölçeklenebil
 ## Kurulum
 
 `docs/KURULUM.md` dosyasındaki iki Firebase adımını uygulayın.
+
+
+## v2.1 tek klasör yapısı
+
+Bu pakette klasör bulunmaz. Bütün dosyalar GitHub deposunun ana dizinine tek seferde yüklenebilir.
+
+Yüklenecek dosyalar:
+
+- `index.html`
+- `game.html`
+- `admin.html`
+- `leaderboard.html`
+- `style.css`
+- `account.css`
+- `game.js`
+- `account.js`
+- `admin.js`
+- `cloud-game.js`
+- `firebase-config.js`
+- `firebase-service.js`
+- `leaderboard.js`
+- `firestore.rules`
+- `KURULUM.md`
+- `README.md`
+
+Mevcut Firebase proje ayarları pakete yerleştirilmiştir.
