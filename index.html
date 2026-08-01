@@ -213,9 +213,15 @@
           <div class="progress-track"><div id="factoryProgress" class="progress-fill"></div></div>
           <p id="factoryStatus" class="muted status-line">Fabrika bekliyor.</p>
 
-          <div class="button-grid">
-            <button id="processBtn" class="solid-button gold" type="button">1 kütüğü işle</button>
-            <button id="upgradeFactoryBtn" class="solid-button green" type="button">Fabrikayı yükselt</button>
+          <div class="factory-queue-box">
+            <span>Üretim sırası</span>
+            <strong id="factoryQueueValue">0 kütük</strong>
+          </div>
+
+          <div class="button-grid factory-buttons">
+            <button id="processBtn" class="solid-button gold" type="button">1 kütüğü sıraya al</button>
+            <button id="autoFactoryBtn" class="solid-button blue" type="button">Otomatik üretimi aç</button>
+            <button id="upgradeFactoryBtn" class="solid-button green full-row" type="button">Fabrikayı yükselt</button>
           </div>
         </section>
 
@@ -242,19 +248,17 @@
           </div>
         </section>
 
-        <section class="management-card">
+        <section class="management-card demand-card">
           <div class="card-heading">
-            <div><span class="kicker">PAZAR</span><h3>Kereste Satışı</h3></div>
-            <span class="status-pill gold-pill">25 ₺ / adet</span>
+            <div><span class="kicker">FİRMA TALEPLERİ</span><h3>Kereste Satışı</h3></div>
+            <span class="status-pill gold-pill">Canlı Pazar</span>
           </div>
 
-          <div class="sale-visual">
-            <div class="plank-stack"></div>
-            <div class="sale-arrow">→</div>
-            <div class="coin-stack"></div>
-          </div>
+          <p class="demand-help">
+            Firmalar kütük veya kereste talep eder. Ürün stokta yoksa süre bitene kadar bekler.
+          </p>
 
-          <button id="sellBtn" class="solid-button gold wide" type="button">Tüm keresteyi sat</button>
+          <div id="companyOrders" class="company-orders"></div>
         </section>
       </aside>
 
@@ -266,6 +270,85 @@
         <div id="eventLog" class="event-log" aria-live="polite"></div>
       </section>
     </main>
+  </div>
+
+
+  <div id="updateModal" class="update-modal" aria-hidden="true">
+    <div class="update-backdrop"></div>
+
+    <section class="update-dialog" role="dialog" aria-modal="true" aria-labelledby="updateTitle">
+      <div class="update-header">
+        <div>
+          <span class="kicker">SÜRÜM 1.1</span>
+          <h2 id="updateTitle">Bilgi Ekranı</h2>
+          <p>Oyuna eklenen son yenilikler</p>
+        </div>
+        <div class="update-badge">YENİ</div>
+      </div>
+
+      <div class="update-list">
+        <article class="update-item forest-update">
+          <div class="update-icon forest-update-icon" aria-hidden="true"></div>
+          <div>
+            <strong>Orman işçileri sınırlandırıldı</strong>
+            <p>İşçiler artık yalnızca orman arazisi içinde hareket ederek fidan dikiyor ve olgun ağaçları kesiyor.</p>
+          </div>
+        </article>
+
+        <article class="update-item seed-update">
+          <div class="update-icon seed-update-icon" aria-hidden="true"></div>
+          <div>
+            <strong>Fidan üretim döngüsü geliştirildi</strong>
+            <p>Fidan, büyüyen ağaç, kesime hazır ağaç ve kesilmiş kütük aşamaları arazi üzerinde görüntüleniyor.</p>
+          </div>
+        </article>
+
+        <article class="update-item forklift-update">
+          <div class="update-icon forklift-update-icon" aria-hidden="true"></div>
+          <div>
+            <strong>Forklift sistemi eklendi</strong>
+            <p>Kesilen kütükler artık forklift tarafından araziden alınıp fabrikaya taşınıyor.</p>
+          </div>
+        </article>
+
+        <article class="update-item factory-update">
+          <div class="update-icon factory-update-icon" aria-hidden="true"></div>
+          <div>
+            <strong>Fabrika teslimat akışı yenilendi</strong>
+            <p>Kütük stoğu, forklift fabrikaya ulaştıktan sonra artıyor ve üretim süreci daha görünür hale geliyor.</p>
+          </div>
+        </article>
+
+        <article class="update-item interface-update">
+          <div class="update-icon interface-update-icon" aria-hidden="true"></div>
+          <div>
+            <strong>Yönetim arayüzü iyileştirildi</strong>
+            <p>Orman işçi bölgesi ile forklift taşıma hattı haritada ayrı alanlar olarak gösteriliyor.</p>
+          </div>
+        </article>
+
+        <article class="update-item factory-update">
+          <div class="update-icon factory-update-icon" aria-hidden="true"></div>
+          <div>
+            <strong>Otomatik fabrika üretimi eklendi</strong>
+            <p>Kütükler üretim sırasına alınabilir ve fabrika bunları otomatik olarak tek tek işler.</p>
+          </div>
+        </article>
+
+        <article class="update-item forklift-update">
+          <div class="update-icon forklift-update-icon" aria-hidden="true"></div>
+          <div>
+            <strong>Kütük ve kereste satışları açıldı</strong>
+            <p>Firmalar artık hem kütük hem de kereste talep eder; ürün stokta varsa otomatik satın alır.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="update-footer">
+        <span>Bu ekran aynı sürüm için yalnızca bir kez gösterilir.</span>
+        <button id="closeUpdateModal" class="update-close-button" type="button">Okudum</button>
+      </div>
+    </section>
   </div>
 
   <div id="toast" class="toast"></div>

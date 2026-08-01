@@ -319,3 +319,531 @@ button{font:inherit}.topbar{min-height:88px;padding:14px 20px;display:grid;grid-
     top: 53%;
   }
 }
+
+
+/* v0.9 - Güncelleme bilgi ekranı */
+
+.update-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  place-items: center;
+  padding: 18px;
+}
+
+.update-modal.open {
+  display: grid;
+}
+
+.update-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 10, 7, .82);
+  backdrop-filter: blur(8px);
+}
+
+.update-dialog {
+  position: relative;
+  width: min(760px, 100%);
+  max-height: min(88vh, 820px);
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,.12);
+  background:
+    linear-gradient(180deg, rgba(27, 70, 52, .99), rgba(11, 35, 25, .99));
+  box-shadow: 0 35px 100px rgba(0,0,0,.52);
+  animation: updateDialogIn .28s ease-out;
+}
+
+.update-header {
+  padding: 22px 22px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  background:
+    radial-gradient(circle at 15% 0%, rgba(121, 199, 142, .2), transparent 20rem);
+}
+
+.update-header h2 {
+  margin: 0;
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+}
+
+.update-header p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: .84rem;
+}
+
+.update-badge {
+  padding: 8px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(234, 193, 101, .32);
+  background: rgba(234, 193, 101, .14);
+  color: #ffe2a0;
+  font-size: .68rem;
+  font-weight: 950;
+  letter-spacing: .12em;
+}
+
+.update-list {
+  padding: 16px 18px;
+  overflow-y: auto;
+  max-height: 58vh;
+  display: grid;
+  gap: 11px;
+}
+
+.update-item {
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  gap: 13px;
+  align-items: center;
+  padding: 13px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.09);
+  background: rgba(255,255,255,.035);
+}
+
+.update-item strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: .92rem;
+}
+
+.update-item p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.48;
+  font-size: .76rem;
+}
+
+.update-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.12);
+}
+
+/* Tarla / orman ikonu */
+.forest-update {
+  border-color: rgba(103, 193, 126, .26);
+  background: linear-gradient(90deg, rgba(68, 137, 83, .14), rgba(255,255,255,.025));
+}
+
+.forest-update-icon {
+  background: rgba(75, 151, 91, .18);
+}
+
+.forest-update-icon::before {
+  content: "";
+  width: 24px;
+  height: 30px;
+  background:
+    radial-gradient(circle at 50% 18%, #69bd78 0 8px, transparent 9px),
+    radial-gradient(circle at 30% 42%, #4f9f61 0 8px, transparent 9px),
+    radial-gradient(circle at 70% 42%, #4b955b 0 8px, transparent 9px),
+    linear-gradient(#86552d, #86552d) center bottom / 5px 15px no-repeat;
+}
+
+/* Fidan ikonu */
+.seed-update {
+  border-color: rgba(145, 202, 102, .25);
+  background: linear-gradient(90deg, rgba(125, 173, 77, .14), rgba(255,255,255,.025));
+}
+
+.seed-update-icon {
+  background: rgba(123, 173, 73, .17);
+}
+
+.seed-update-icon::before {
+  content: "";
+  position: absolute;
+  left: 21px;
+  top: 15px;
+  width: 5px;
+  height: 24px;
+  border-radius: 3px;
+  background: #8a5a31;
+}
+
+.seed-update-icon::after {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 10px;
+  width: 26px;
+  height: 20px;
+  background:
+    radial-gradient(ellipse at 25% 50%, #76c77f 0 8px, transparent 9px),
+    radial-gradient(ellipse at 75% 50%, #59ad69 0 8px, transparent 9px);
+}
+
+/* Forklift ikonu */
+.forklift-update {
+  border-color: rgba(225, 174, 59, .27);
+  background: linear-gradient(90deg, rgba(194, 137, 30, .14), rgba(255,255,255,.025));
+}
+
+.forklift-update-icon {
+  background: rgba(217, 164, 48, .17);
+}
+
+.forklift-update-icon::before {
+  content: "";
+  width: 29px;
+  height: 20px;
+  border-radius: 4px 6px 3px 3px;
+  background: #dea63a;
+  box-shadow:
+    -10px 9px 0 -7px #292d2b,
+    15px 9px 0 -7px #292d2b;
+}
+
+.forklift-update-icon::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 9px;
+  width: 5px;
+  height: 30px;
+  background: #343936;
+  box-shadow: -5px 22px 0 0 #343936;
+}
+
+/* Fabrika ikonu */
+.factory-update {
+  border-color: rgba(130, 167, 185, .28);
+  background: linear-gradient(90deg, rgba(91, 130, 151, .14), rgba(255,255,255,.025));
+}
+
+.factory-update-icon {
+  background: rgba(99, 141, 161, .16);
+}
+
+.factory-update-icon::before {
+  content: "";
+  width: 31px;
+  height: 24px;
+  margin-top: 10px;
+  background:
+    linear-gradient(135deg, transparent 0 33%, #a8b3b7 34% 60%, transparent 61%) 0 0 / 11px 11px repeat-x,
+    linear-gradient(#89979d, #89979d) left bottom / 31px 17px no-repeat;
+}
+
+.factory-update-icon::after {
+  content: "";
+  position: absolute;
+  right: 9px;
+  top: 7px;
+  width: 7px;
+  height: 24px;
+  border-radius: 2px 2px 0 0;
+  background: #596267;
+}
+
+/* Arayüz ikonu */
+.interface-update {
+  border-color: rgba(152, 128, 210, .28);
+  background: linear-gradient(90deg, rgba(113, 91, 172, .14), rgba(255,255,255,.025));
+}
+
+.interface-update-icon {
+  background: rgba(122, 98, 180, .17);
+}
+
+.interface-update-icon::before {
+  content: "";
+  width: 30px;
+  height: 24px;
+  border-radius: 4px;
+  border: 3px solid #a995d9;
+  box-shadow: inset 0 7px 0 rgba(169,149,217,.28);
+}
+
+.interface-update-icon::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  bottom: 9px;
+  width: 20px;
+  height: 3px;
+  border-radius: 999px;
+  background: #a995d9;
+}
+
+.update-footer {
+  padding: 15px 18px 18px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 13px;
+}
+
+.update-footer span {
+  color: var(--muted);
+  font-size: .68rem;
+}
+
+.update-close-button {
+  min-width: 120px;
+  border: 0;
+  border-radius: 12px;
+  padding: 11px 18px;
+  cursor: pointer;
+  font-weight: 950;
+  color: #172219;
+  background: linear-gradient(145deg, #f0d487, #d7a84d);
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+@keyframes updateDialogIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 580px) {
+  .update-modal {
+    padding: 10px;
+  }
+
+  .update-header,
+  .update-footer {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .update-list {
+    padding: 12px;
+  }
+
+  .update-item {
+    grid-template-columns: 45px 1fr;
+    padding: 11px;
+  }
+
+  .update-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .update-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .update-close-button {
+    width: 100%;
+  }
+}
+
+
+/* v1.0 - Otomatik fabrika ve firma talepleri */
+
+.solid-button.blue {
+  background: #73a8d9;
+  color: #102031;
+}
+
+.full-row {
+  grid-column: 1 / -1;
+}
+
+.factory-buttons {
+  grid-template-columns: 1fr 1fr;
+}
+
+.factory-queue-box {
+  margin: 0 0 9px;
+  padding: 9px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 10px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.07);
+}
+
+.factory-queue-box span {
+  color: var(--muted);
+  font-size: .67rem;
+}
+
+.factory-queue-box strong {
+  font-size: .78rem;
+}
+
+.demand-help {
+  margin: -2px 0 11px;
+  color: var(--muted);
+  font-size: .68rem;
+  line-height: 1.45;
+}
+
+.company-orders {
+  display: grid;
+  gap: 8px;
+}
+
+.company-order {
+  position: relative;
+  overflow: hidden;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.035);
+}
+
+.company-order.fulfilled {
+  border-color: rgba(103, 193, 126, .28);
+  background: rgba(72, 145, 87, .10);
+}
+
+.company-order.waiting {
+  border-color: rgba(215, 170, 80, .26);
+}
+
+.company-order.expiring {
+  border-color: rgba(220, 100, 79, .36);
+  background: rgba(145, 54, 42, .09);
+}
+
+.company-order-header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 8px;
+}
+
+.company-logo {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-weight: 950;
+  font-size: .66rem;
+  color: #f5e8be;
+  background:
+    linear-gradient(145deg, rgba(215,170,80,.28), rgba(96,66,21,.42));
+  border: 1px solid rgba(215,170,80,.26);
+}
+
+.company-name {
+  min-width: 0;
+  flex: 1;
+}
+
+.company-name strong {
+  display: block;
+  font-size: .75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.company-name small {
+  display: block;
+  color: var(--muted);
+  margin-top: 2px;
+  font-size: .59rem;
+}
+
+.order-amount {
+  text-align: right;
+}
+
+.order-amount strong {
+  display: block;
+  font-size: .83rem;
+  color: #f2d58e;
+}
+
+.order-amount small {
+  color: var(--muted);
+  font-size: .57rem;
+}
+
+.order-progress {
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(0,0,0,.28);
+}
+
+.order-progress span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #d7aa50, #f3d68f);
+  transition: width .25s linear;
+}
+
+.order-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: .58rem;
+}
+
+.order-footer .danger {
+  color: #ef9b87;
+}
+
+.order-footer .success {
+  color: #9edaae;
+}
+
+@media (max-width: 520px) {
+  .factory-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .full-row {
+    grid-column: auto;
+  }
+}
+
+
+.product-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  font-size: .54rem;
+  font-weight: 900;
+  border: 1px solid rgba(255,255,255,.09);
+}
+
+.product-badge.logs {
+  color: #f0c58f;
+  background: rgba(139, 84, 40, .18);
+  border-color: rgba(190, 124, 65, .25);
+}
+
+.product-badge.lumber {
+  color: #f2d18c;
+  background: rgba(187, 126, 58, .14);
+  border-color: rgba(216, 169, 80, .24);
+}

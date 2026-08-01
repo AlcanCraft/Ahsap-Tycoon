@@ -4,7 +4,13 @@ const CONFIG = {
   growthSeconds: 18,
   harvestedDisplaySeconds: 3,
   forestAutomationIntervalMs: 1600,
+  logSellPriceMin: 12,
+  logSellPriceMax: 20,
   lumberSellPrice: 25,
+  companyOrderCount: 6,
+  companyOrderMinSeconds: 28,
+  companyOrderMaxSeconds: 55,
+  companyReplacementDelayMs: 2500,
   hireCost: 50,
   workerSalaryPerMinute: 1,
   logStorage: 100,
@@ -37,8 +43,11 @@ const initialState = () => ({
   factoryLevel: 1,
   lodgingLevel: 1,
   autoForest: false,
+  autoFactory: false,
+  factoryQueue: 0,
   lastForestAutomationAt: 0,
   processing: null,
+  companyOrders: [],
   plots: Array.from({ length: CONFIG.plotCount }, (_, id) => ({
     id,
     state: "empty",
@@ -97,7 +106,12 @@ const els = {
   smoke2: document.querySelector("#smoke2"),
   smoke3: document.querySelector("#smoke3"),
   forklift: document.querySelector("#forklift"),
-  gameMap: document.querySelector(".game-map")
+  gameMap: document.querySelector(".game-map"),
+  updateModal: document.querySelector("#updateModal"),
+  closeUpdateModal: document.querySelector("#closeUpdateModal"),
+  autoFactoryBtn: document.querySelector("#autoFactoryBtn"),
+  factoryQueueValue: document.querySelector("#factoryQueueValue"),
+  companyOrders: document.querySelector("#companyOrders")
 };
 
 function migrateState() {
@@ -105,6 +119,12 @@ function migrateState() {
   if (!state.lastForestAutomationAt) state.lastForestAutomationAt = 0;
   if (!state.lastSalaryAt) state.lastSalaryAt = Date.now();
   if (!Array.isArray(state.logsHistory)) state.logsHistory = [];
+  if (typeof state.autoFactory !== "boolean") state.autoFactory = false;
+  if (!Number.isFinite(state.factoryQueue)) state.factoryQueue = 0;
+  if (!Array.isArray(state.companyOrders)) state.companyOrders = [];
+  for (const order of state.companyOrders) {
+    if (!order.productType) order.productType = "lumber";
+  }
   for (const plot of state.plots) {
     if (!("harvestedAt" in plot)) plot.harvestedAt = null;
   }
@@ -330,34 +350,252 @@ function runForestAutomation() {
 }
 
 function startProcessing() {
+  if (state.logs < 1) return showToast("Sıraya almak için kütük yok.");
+
+  state.logs -= 1;
+  state.factoryQueue += 1;
+  addLog("1 kütük fabrika üretim sırasına alındı.");
+  startNextFactoryJob();
+  render();
+}
+
+function startNextFactoryJob() {
+  if (state.processing) return;
+  if (state.factoryQueue <= 0) return;
+  if (state.lumber >= CONFIG.lumberStorage) return;
+  if (state.workers < factoryConfig().workers) return;
+
+  state.factoryQueue -= 1;
   const cfg = factoryConfig();
-
-  if (state.processing) return showToast("Fabrika zaten çalışıyor.");
-  if (state.logs < 1) return showToast("İşlemek için kütük yok.");
-  if (state.lumber >= CONFIG.lumberStorage) return showToast("Kereste deposu dolu.");
-  if (state.workers < cfg.workers) return showToast(`Fabrika için ${cfg.workers} işçi gerekiyor.`);
-
-  state.logs--;
   state.processing = {
     startedAt: Date.now(),
     finishAt: Date.now() + cfg.processSeconds * 1000
   };
-  addLog("Fabrika 1 kütüğü işlemeye başladı.");
+  addLog("Fabrika sıradaki kütüğü işlemeye başladı.");
+}
+
+function refillFactoryQueueAutomatically() {
+  if (!state.autoFactory) return;
+
+  const freeLumberSpace = CONFIG.lumberStorage - state.lumber;
+  const committed = state.factoryQueue + (state.processing ? 1 : 0);
+  const maxCanQueue = Math.max(0, freeLumberSpace - committed);
+
+  if (maxCanQueue <= 0 || state.logs <= 0) return;
+
+  const amount = Math.min(state.logs, maxCanQueue);
+  if (amount <= 0) return;
+
+  state.logs -= amount;
+  state.factoryQueue += amount;
+  addLog(`Otomatik fabrika ${amount} kütüğü üretim sırasına aldı.`);
+}
+
+function toggleAutoFactory() {
+  state.autoFactory = !state.autoFactory;
+  addLog(state.autoFactory
+    ? "Otomatik kereste üretimi açıldı."
+    : "Otomatik kereste üretimi kapatıldı."
+  );
+
+  if (state.autoFactory) {
+    refillFactoryQueueAutomatically();
+    startNextFactoryJob();
+  }
+
   render();
 }
 
 function finishProcessing() {
   if (!state.processing || Date.now() < state.processing.finishAt) return;
+
   state.processing = null;
 
   if (state.lumber < CONFIG.lumberStorage) {
-    state.lumber++;
-    addLog("1 kütük, 1 keresteye dönüştürüldü.");
+    state.lumber += 1;
+    addLog("Fabrika 1 kereste üretti.");
   } else {
-    state.logs++;
-    addLog("Kereste deposu dolu; kütük geri alındı.");
+    state.factoryQueue += 1;
+    addLog("Kereste deposu dolu; işlenen ürün sıraya geri alındı.");
   }
+
+  processCompanyOrders();
+  refillFactoryQueueAutomatically();
+  startNextFactoryJob();
   render();
+}
+
+
+const COMPANY_NAMES = [
+  "Master Dekorasyon",
+  "Hazer Ahşap",
+  "Altın Ahşap İşleme",
+  "Doruk Mobilya",
+  "Marmara Dekor",
+  "Atlas Yapı Ahşap",
+  "Kuzey Kereste",
+  "Selçuklu İç Mimari",
+  "Vadi Tasarım",
+  "Bora Ahşap Sanayi"
+];
+
+function randomBetween(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function makeCompanyOrder() {
+  const company = COMPANY_NAMES[Math.floor(Math.random() * COMPANY_NAMES.length)];
+  const productType = Math.random() < 0.45 ? "logs" : "lumber";
+  const quantity = randomBetween(1, 5);
+  const pricePerUnit = productType === "logs"
+    ? randomBetween(CONFIG.logSellPriceMin, CONFIG.logSellPriceMax)
+    : randomBetween(28, 42);
+  const durationSeconds = randomBetween(
+    CONFIG.companyOrderMinSeconds,
+    CONFIG.companyOrderMaxSeconds
+  );
+
+  return {
+    id: `${Date.now()}_${Math.random().toString(36).slice(2)}`,
+    company,
+    productType,
+    quantity,
+    remaining: quantity,
+    pricePerUnit,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + durationSeconds * 1000,
+    status: "waiting",
+    replacementAt: null
+  };
+}
+
+function ensureCompanyOrders() {
+  while (state.companyOrders.length < CONFIG.companyOrderCount) {
+    state.companyOrders.push(makeCompanyOrder());
+  }
+}
+
+function fulfillOrder(order) {
+  if (order.status !== "waiting") return;
+
+  const stock = order.productType === "logs" ? state.logs : state.lumber;
+  if (stock < order.remaining) return;
+
+  if (order.productType === "logs") {
+    state.logs -= order.remaining;
+  } else {
+    state.lumber -= order.remaining;
+  }
+
+  const revenue = order.remaining * order.pricePerUnit;
+  state.money += revenue;
+  order.remaining = 0;
+  order.status = "fulfilled";
+  order.replacementAt = Date.now() + CONFIG.companyReplacementDelayMs;
+
+  const productName = order.productType === "logs" ? "kütük" : "kereste";
+  addLog(`${order.company}, ${productName} siparişini aldı. ${currency(revenue)} kazanıldı.`);
+
+  if (state.autoFactory) {
+    refillFactoryQueueAutomatically();
+    startNextFactoryJob();
+  }
+}
+
+function processCompanyOrders() {
+  const now = Date.now();
+
+  for (const order of state.companyOrders) {
+    if (order.status === "waiting") {
+      const stock = order.productType === "logs" ? state.logs : state.lumber;
+      if (stock >= order.remaining) {
+        fulfillOrder(order);
+      } else if (now >= order.expiresAt) {
+        order.status = "expired";
+        order.replacementAt = now + CONFIG.companyReplacementDelayMs;
+        addLog(`${order.company} bekleme süresi dolduğu için ayrıldı.`);
+      }
+    }
+  }
+
+  state.companyOrders = state.companyOrders.filter(order => {
+    if (!order.replacementAt) return true;
+    return now < order.replacementAt;
+  });
+
+  ensureCompanyOrders();
+}
+
+function renderCompanyOrders() {
+  if (!els.companyOrders) return;
+
+  const now = Date.now();
+
+  els.companyOrders.innerHTML = state.companyOrders.map(order => {
+    const totalTime = Math.max(1, order.expiresAt - order.createdAt);
+    const remainingTime = Math.max(0, order.expiresAt - now);
+    const timeRatio = Math.max(0, Math.min(1, remainingTime / totalTime));
+    const seconds = Math.ceil(remainingTime / 1000);
+    const initials = order.company
+      .split(" ")
+      .slice(0, 2)
+      .map(word => word[0])
+      .join("");
+
+    const isExpiring = order.status === "waiting" && seconds <= 10;
+    const className = order.status === "fulfilled"
+      ? "fulfilled"
+      : order.status === "expired"
+        ? "expiring"
+        : isExpiring
+          ? "expiring"
+          : "waiting";
+
+    let statusText = "Stok bekleniyor";
+    let statusClass = "";
+
+    const stock = order.productType === "logs" ? state.logs : state.lumber;
+    const productName = order.productType === "logs" ? "Kütük" : "Kereste";
+
+    if (order.status === "fulfilled") {
+      statusText = "Sipariş tamamlandı";
+      statusClass = "success";
+    } else if (order.status === "expired") {
+      statusText = "Firma ayrılıyor";
+      statusClass = "danger";
+    } else if (stock >= order.remaining) {
+      statusText = "Ürün yükleniyor";
+      statusClass = "success";
+    }
+
+    return `
+      <article class="company-order ${className}">
+        <div class="company-order-header">
+          <div class="company-logo">${initials}</div>
+          <div class="company-name">
+            <strong>${order.company}</strong>
+            <small>${order.pricePerUnit} ₺ / adet</small>
+            <span class="product-badge ${order.productType}">
+              ${order.productType === "logs" ? "Kütük Talebi" : "Kereste Talebi"}
+            </span>
+          </div>
+          <div class="order-amount">
+            <strong>${order.quantity} adet</strong>
+            <small>${currency(order.quantity * order.pricePerUnit)}</small>
+          </div>
+        </div>
+
+        <div class="order-progress">
+          <span style="width:${Math.round(timeRatio * 100)}%"></span>
+        </div>
+
+        <div class="order-footer">
+          <span class="${statusClass}">${statusText}</span>
+          <span>${order.status === "waiting" ? `${seconds} sn` : ""}</span>
+        </div>
+      </article>
+    `;
+  }).join("");
 }
 
 function sellLumber() {
@@ -546,7 +784,14 @@ function render() {
   els.factoryLevel.textContent = `Sv. ${state.factoryLevel}`;
   els.processTime.textContent = `${factory.processSeconds} sn`;
   els.factoryWorkers.textContent = factory.workers;
-  els.processBtn.disabled = Boolean(state.processing);
+  els.processBtn.disabled = state.logs < 1;
+  els.processBtn.textContent = state.logs > 0
+    ? "1 kütüğü sıraya al"
+    : "Kütük bekleniyor";
+  els.autoFactoryBtn.textContent = state.autoFactory
+    ? "Otomatik üretimi kapat"
+    : "Otomatik üretimi aç";
+  els.factoryQueueValue.textContent = `${state.factoryQueue} kütük`;
   els.upgradeFactoryBtn.textContent = factory.upgradeCost === null
     ? "Maksimum seviye"
     : `Yükselt • ${currency(factory.upgradeCost)}`;
@@ -574,9 +819,11 @@ function render() {
     ? `Otomatik ekip aktif. ${fieldWorkers} müsait işçi fidan dikiyor, olgun ağaçları kesiyor ve yeniden ekim yapıyor.`
     : "Manuel mod açık. Araziye tıklayabilir veya üretim düğmesini kullanabilirsin.";
 
-  els.sellBtn.textContent = state.lumber > 0
-    ? `${state.lumber} keresteyi sat • ${currency(state.lumber * CONFIG.lumberSellPrice)}`
-    : "Tüm keresteyi sat";
+  if (els.sellBtn) {
+    els.sellBtn.textContent = state.lumber > 0
+      ? `${state.lumber} keresteyi sat • ${currency(state.lumber * CONFIG.lumberSellPrice)}`
+      : "Tüm keresteyi sat";
+  }
 
   els.lodgingMapLevel.textContent = `Seviye ${state.lodgingLevel} • ${state.workers}/${lodging.capacity} işçi`;
   els.factoryMapLevel.textContent = `Seviye ${state.factoryLevel} • ${factory.processSeconds} sn`;
@@ -592,6 +839,7 @@ function render() {
 
   renderPlots();
   renderLog();
+  renderCompanyOrders();
   saveGame();
 }
 
@@ -802,6 +1050,7 @@ async function dispatchForklift() {
   if (state.logs < CONFIG.logStorage) {
     state.logs += 1;
     addLog("Forklift 1 kütüğü araziden alıp fabrikaya teslim etti.");
+    processCompanyOrders();
   } else {
     addLog("Kütük deposu dolu olduğu için teslimat bekletildi.");
   }
@@ -930,10 +1179,39 @@ function motionLoop(now) {
 
 requestAnimationFrame(motionLoop);
 
+
+const GAME_UPDATE_VERSION = "1.1";
+const UPDATE_STORAGE_KEY = `ahsapTycoonUpdateSeen_${GAME_UPDATE_VERSION}`;
+
+function openUpdateModal() {
+  if (!els.updateModal) return;
+  els.updateModal.classList.add("open");
+  els.updateModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+}
+
+function closeUpdateModal() {
+  if (!els.updateModal) return;
+  els.updateModal.classList.remove("open");
+  els.updateModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
+  localStorage.setItem(UPDATE_STORAGE_KEY, "true");
+}
+
+function showUpdateModalIfNeeded() {
+  const hasSeen = localStorage.getItem(UPDATE_STORAGE_KEY) === "true";
+  if (!hasSeen) {
+    setTimeout(openUpdateModal, 450);
+  }
+}
+
+els.closeUpdateModal?.addEventListener("click", closeUpdateModal);
+
 els.manualForestBtn.addEventListener("click", runManualForestCycle);
 els.autoForestBtn.addEventListener("click", toggleAutoForest);
 els.processBtn.addEventListener("click", startProcessing);
-els.sellBtn.addEventListener("click", sellLumber);
+els.autoFactoryBtn.addEventListener("click", toggleAutoFactory);
+els.sellBtn?.addEventListener("click", sellLumber);
 els.hireBtn.addEventListener("click", hireWorker);
 els.upgradeFactoryBtn.addEventListener("click", upgradeFactory);
 els.upgradeLodgingBtn.addEventListener("click", upgradeLodging);
@@ -944,20 +1222,27 @@ motionDebug.className = "motion-debug";
 motionDebug.textContent = "Canlı animasyon sistemi aktif";
 document.querySelector(".game-map")?.appendChild(motionDebug);
 
+ensureCompanyOrders();
+
 if (!state.logsHistory.length) {
-  addLog("Ahşap Tycoon v0.8 başladı. İlk fidanını dik.");
+  addLog("Ahşap Tycoon v1.1 başladı. İlk fidanını dik.");
 }
 
 render();
+showUpdateModalIfNeeded();
 
 setInterval(() => {
   updateGrowth();
   runForestAutomation();
   dispatchWorkerTasks();
   dispatchForklift();
+  refillFactoryQueueAutomatically();
+  startNextFactoryJob();
   finishProcessing();
+  processCompanyOrders();
   paySalaries();
   updateProcessingUI();
   renderPlots();
+  renderCompanyOrders();
   saveGame();
 }, 250);

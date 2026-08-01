@@ -1,4 +1,4 @@
-# Ahşap Tycoon v0.8
+# Ahşap Tycoon v1.1
 
 Bu sürümde metin/emoji ağırlıklı görünüm kaldırıldı ve gerçek oyun sahnesi yaklaşımına geçildi.
 
@@ -83,3 +83,46 @@ Kesimden sonra kütükler yaklaşık 3 saniye arazide görünür. Sonra otomatik
 - Forklift fabrikadan çıkar, ilgili araziye gider ve kütüğü yükler.
 - Forklift kütüğü fabrikaya götürdüğünde kütük stoğu artar.
 - Haritada orman işçi bölgesi ve forklift taşıma hattı görsel olarak ayrılmıştır.
+
+
+## v0.9 bilgi ekranı
+
+- Yeni sürüm yayınlandığında oyuncunun karşısına “Bilgi Ekranı” açılır.
+- Güncelleme maddeleri kategori bazlı listelenir.
+- Orman, fidan, forklift, fabrika ve arayüz için ayrı ikonlar kullanılır.
+- Her güncelleme kategorisi farklı renk ve çerçeveye sahiptir.
+- Oyuncu “Okudum” düğmesine bastığında ekran kapanır.
+- Aynı sürüm için bilgi ekranı yalnızca bir kez gösterilir.
+- Yeni sürümlerde sürüm numarası değiştirilerek ekran tekrar gösterilebilir.
+
+
+## v1.0 otomatik fabrika ve firma talepleri
+
+- Kereste fabrikasına otomatik üretim aç/kapat düğmesi eklendi.
+- Birden fazla kütük üretim sırasına alınabilir.
+- Fabrika sıradaki kütükleri tek tek işler.
+- Otomatik üretim açıkken depodaki uygun kütükler sıraya otomatik eklenir.
+- Aynı anda 6 firma talebi gösterilir.
+- Firma talepleri 1–5 kereste arasındadır.
+- Firma örnekleri:
+  - Master Dekorasyon
+  - Hazer Ahşap
+  - Altın Ahşap İşleme
+  - Doruk Mobilya
+  - Marmara Dekor
+  - Atlas Yapı Ahşap
+- Stok yeterliyse firma ürünü otomatik satın alır.
+- Stok yoksa firma süre bitene kadar bekler.
+- Süresi dolan firma ayrılır ve yerine yeni firma gelir.
+- Her firmanın fiyatı, miktarı ve kalan süresi farklı olabilir.
+
+
+## v1.1 çift ürün satış sistemi
+
+- Firmalar artık hem kütük hem de kereste talep edebilir.
+- Kütük talebi, forklift ürünü fabrikaya teslim ettikten sonra stoktan karşılanır.
+- Kereste talebi, fabrika üretimi tamamlandıktan sonra stoktan karşılanır.
+- Firma kartında ürün türü açıkça gösterilir.
+- Kütük fiyatları keresteden daha düşüktür.
+- Stok yoksa firma bekler.
+- Süre dolarsa firma ayrılır ve yerine yeni firma gelir.
