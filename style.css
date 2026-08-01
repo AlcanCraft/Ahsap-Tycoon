@@ -16,3 +16,32 @@ button{font:inherit}.topbar{min-height:88px;padding:14px 20px;display:grid;grid-
 .side-panel{display:grid;gap:13px;align-content:start}.management-card{padding:14px}.machine-visual{height:92px;position:relative;border-radius:13px;background:rgba(255,255,255,.04);overflow:hidden;margin-bottom:10px}.machine-log{position:absolute;left:12px;top:40px;width:55px;height:18px;border-radius:10px;background:#865127;border:4px solid #a46732;animation:machineLog 4s linear infinite}.saw-wheel{position:absolute;left:50%;top:21px;width:50px;height:50px;border-radius:50%;border:8px dotted #c8d1d0;translate:-50% 0;animation:spin 1.5s linear infinite}.machine-planks{position:absolute;right:12px;top:28px;display:grid;gap:5px}.machine-planks i{display:block;width:48px;height:10px;border-radius:3px;background:#b8793d}.mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px}.mini-stats>div{padding:8px 9px;border-radius:10px;background:rgba(255,255,255,.04)}.mini-stats small{display:block;color:var(--muted);font-size:.65rem}.progress-track{height:9px;border-radius:999px;background:rgba(0,0,0,.3);overflow:hidden}.progress-fill{height:100%;width:0;background:linear-gradient(90deg,#d6aa51,#f2d58e)}.status-line{margin:7px 0 10px}.button-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.solid-button{border:0;border-radius:11px;padding:9px 10px;font-weight:900;cursor:pointer}.solid-button.gold{background:#d8aa50;color:#182219}.solid-button.green{background:#65b77d;color:#102016}.wide{width:100%}.worker-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:9px}.worker-stats>div{padding:8px;border-radius:10px;background:rgba(255,255,255,.04);text-align:center}.worker-stats small{display:block;color:var(--muted);font-size:.61rem}.worker-dot{display:block;width:9px;height:9px;border-radius:50%;margin:0 auto 4px}.field-dot{background:#7dc98d}.factory-dot{background:#d9ac57}.idle-dot{background:#89988f}.sale-visual{height:78px;border-radius:12px;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:10px}.plank-stack{width:55px;height:36px;background:linear-gradient(#b8793d 0 27%,transparent 27% 36%,#a96f36 36% 63%,transparent 63% 72%,#c58d4d 72%);border-radius:4px}.sale-arrow{font-size:1.5rem;color:#d8aa50}.coin-stack{width:42px;height:42px;border-radius:50%;background:#e0b457;box-shadow:inset 0 0 0 7px #bb8a2d;position:relative}.coin-stack:after{content:"₺";position:absolute;inset:0;display:grid;place-items:center;color:#5c4214;font-weight:900}.event-card{grid-column:1/-1;padding:14px}.event-log{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;max-height:170px;overflow:auto}.log-entry{padding:8px 9px;border-radius:10px;background:rgba(255,255,255,.035);display:flex;gap:8px;font-size:.72rem;color:var(--muted)}.log-entry time{color:#dfb660}.toast{position:fixed;left:50%;bottom:22px;translate:-50% 18px;opacity:0;padding:10px 15px;border-radius:999px;background:#f5ecd0;color:#152018;font-weight:900;transition:.2s;z-index:60}.toast.show{opacity:1;translate:-50% 0}
 @keyframes sway{0%,100%{rotate:-2deg}50%{rotate:2deg}}@keyframes spin{to{rotate:360deg}}@keyframes smoke{0%{transform:translate(0,0) scale(.7);opacity:.1}50%{opacity:.4}100%{transform:translate(30px,-48px) scale(1.5);opacity:0}}@keyframes workerWalk{0%{left:8%;top:62%}35%{left:50%;top:58%}65%{left:71%;top:43%}100%{left:8%;top:62%}}@keyframes logMove{0%{left:0}100%{left:calc(100% - 36px)}}@keyframes truckDrive{0%{left:-130px}100%{left:calc(100% + 20px)}}@keyframes machineLog{0%{left:12px}55%{left:44%}100%{left:44%;opacity:.2}}
 @media(max-width:1100px){.topbar{grid-template-columns:1fr auto}.resource-bar{grid-column:1/-1;grid-row:2;max-width:none}.layout{grid-template-columns:1fr}.side-panel{grid-template-columns:repeat(3,1fr)}.event-card{grid-column:auto}}@media(max-width:760px){.topbar,.layout{padding:10px}.resource-bar{grid-template-columns:1fr 1fr}.game-map{min-height:760px}.field-grid{left:3%;top:5%;width:94%}.lodging-building{left:4%;right:auto;top:58%;width:160px}.factory-building{right:3%;top:56%;width:195px}.warehouse-building{left:50%;right:auto;transform:translateX(-50%);bottom:13%;width:180px}.side-panel{grid-template-columns:1fr}.forest-controls{grid-template-columns:1fr}.event-log{grid-template-columns:1fr}}@media(max-width:520px){.brand-logo{width:42px;height:42px}.resource{padding:8px}.game-map{min-height:720px}.field-grid{grid-template-columns:repeat(4,minmax(54px,1fr));gap:5px}.plot{min-height:72px}.tree-svg{width:42px;height:42px}.plot-label{font-size:.51rem}.building-caption{padding:5px 7px}.button-grid{grid-template-columns:1fr}}
+
+
+/* v0.5: Hareketler JavaScript tarafından yönetilir. */
+.worker-sprite,
+.moving-log,
+.truck-body,
+.saw-wheel,
+.smoke {
+  animation: none !important;
+  will-change: transform, left, top, opacity;
+}
+
+.worker-sprite {
+  transition: none !important;
+}
+
+.motion-debug {
+  position: absolute;
+  left: 14px;
+  bottom: 76px;
+  z-index: 20;
+  padding: 6px 9px;
+  border-radius: 9px;
+  background: rgba(5,18,12,.72);
+  border: 1px solid rgba(255,255,255,.1);
+  font-size: .62rem;
+  color: #cbe8d2;
+  pointer-events: none;
+}

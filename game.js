@@ -84,7 +84,16 @@ const els = {
   lodgingMapLevel: document.querySelector("#lodgingMapLevel"),
   factoryMapLevel: document.querySelector("#factoryMapLevel"),
   warehouseMapInfo: document.querySelector("#warehouseMapInfo"),
-  gameLevelBadge: document.querySelector("#gameLevelBadge")
+  gameLevelBadge: document.querySelector("#gameLevelBadge"),
+  workerA: document.querySelector("#workerA"),
+  workerB: document.querySelector("#workerB"),
+  movingLogA: document.querySelector("#movingLogA"),
+  movingLogB: document.querySelector("#movingLogB"),
+  movingTruck: document.querySelector("#movingTruck"),
+  sawWheel: document.querySelector("#sawWheel"),
+  smoke1: document.querySelector("#smoke1"),
+  smoke2: document.querySelector("#smoke2"),
+  smoke3: document.querySelector("#smoke3")
 };
 
 function migrateState() {
@@ -554,6 +563,115 @@ function updateProcessingUI() {
   els.factoryStatus.textContent = `Üretim devam ediyor: ${remaining} saniye kaldı.`;
 }
 
+
+const motionState = {
+  start: performance.now(),
+  lastFrame: performance.now()
+};
+
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
+function routePoint(progress) {
+  const points = [
+    { x: 8, y: 62 },
+    { x: 35, y: 54 },
+    { x: 58, y: 48 },
+    { x: 72, y: 40 },
+    { x: 48, y: 58 },
+    { x: 8, y: 62 }
+  ];
+
+  const scaled = progress * (points.length - 1);
+  const index = Math.min(points.length - 2, Math.floor(scaled));
+  const local = scaled - index;
+  return {
+    x: lerp(points[index].x, points[index + 1].x, local),
+    y: lerp(points[index].y, points[index + 1].y, local)
+  };
+}
+
+function animateWorker(el, seconds, phase, now) {
+  if (!el) return;
+  const progress = (((now / 1000) + phase) % seconds) / seconds;
+  const point = routePoint(progress);
+  const bob = Math.sin(progress * Math.PI * 18) * 2;
+  el.style.left = `${point.x}%`;
+  el.style.top = `${point.y}%`;
+  el.style.transform = `translate(-50%, ${bob}px)`;
+}
+
+function animateTruck(now) {
+  if (!els.movingTruck) return;
+  const scene = els.movingTruck.parentElement;
+  const width = scene?.clientWidth || 900;
+  const duration = 12;
+  const progress = ((now / 1000) % duration) / duration;
+  const x = lerp(-140, width + 30, progress);
+  const bounce = Math.sin(progress * Math.PI * 30) * 1.5;
+  els.movingTruck.style.transform = `translate(${x}px, ${bounce}px)`;
+}
+
+function animateLog(el, seconds, phase, now) {
+  if (!el) return;
+  const parentWidth = el.parentElement?.clientWidth || 150;
+  const progress = (((now / 1000) + phase) % seconds) / seconds;
+  const x = lerp(0, Math.max(0, parentWidth - 38), progress);
+  const roll = progress * 720;
+  el.style.transform = `translateX(${x}px) rotate(${roll}deg)`;
+}
+
+function animateSaw(now) {
+  if (!els.sawWheel) return;
+  const rotation = (now * 0.36) % 360;
+  els.sawWheel.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+}
+
+function animateSmoke(el, phase, now) {
+  if (!el) return;
+  const duration = 3.2;
+  const progress = (((now / 1000) + phase) % duration) / duration;
+  const x = progress * 30;
+  const y = -progress * 52;
+  const scale = .65 + progress * .95;
+  const opacity = Math.sin(progress * Math.PI) * .42;
+  el.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+  el.style.opacity = opacity.toFixed(2);
+}
+
+function animateMachineLog(now) {
+  const el = document.querySelector(".machine-log");
+  if (!el) return;
+  const duration = 4;
+  const progress = ((now / 1000) % duration) / duration;
+  const containerWidth = el.parentElement?.clientWidth || 250;
+  const maxX = Math.max(0, containerWidth * .45);
+  const x = progress < .7
+    ? lerp(0, maxX, progress / .7)
+    : maxX;
+  const opacity = progress < .85 ? 1 : Math.max(0, 1 - (progress - .85) / .15);
+  el.style.transform = `translateX(${x}px)`;
+  el.style.opacity = opacity;
+}
+
+function motionLoop(now) {
+  animateWorker(els.workerA, 10, 0, now);
+  animateWorker(els.workerB, 11, 5.2, now);
+  animateTruck(now);
+  animateLog(els.movingLogA, 4.5, 0, now);
+  animateLog(els.movingLogB, 4.5, 2.25, now);
+  animateSaw(now);
+  animateSmoke(els.smoke1, 0, now);
+  animateSmoke(els.smoke2, 1.05, now);
+  animateSmoke(els.smoke3, 2.1, now);
+  animateMachineLog(now);
+
+  requestAnimationFrame(motionLoop);
+}
+
+requestAnimationFrame(motionLoop);
+
 els.manualForestBtn.addEventListener("click", runManualForestCycle);
 els.autoForestBtn.addEventListener("click", toggleAutoForest);
 els.processBtn.addEventListener("click", startProcessing);
@@ -563,8 +681,13 @@ els.upgradeFactoryBtn.addEventListener("click", upgradeFactory);
 els.upgradeLodgingBtn.addEventListener("click", upgradeLodging);
 els.resetBtn.addEventListener("click", resetGame);
 
+const motionDebug = document.createElement("div");
+motionDebug.className = "motion-debug";
+motionDebug.textContent = "Canlı animasyon sistemi aktif";
+document.querySelector(".game-map")?.appendChild(motionDebug);
+
 if (!state.logsHistory.length) {
-  addLog("Ahşap Tycoon v0.4 başladı. İlk fidanını dik.");
+  addLog("Ahşap Tycoon v0.5 başladı. İlk fidanını dik.");
 }
 
 render();
