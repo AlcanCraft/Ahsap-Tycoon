@@ -847,3 +847,225 @@ body.modal-open {
   background: rgba(187, 126, 58, .14);
   border-color: rgba(216, 169, 80, .24);
 }
+
+
+/* v1.3 - Forklift filosu, arazi pazarı ve lojistik merkezi */
+
+.field-grid {
+  transition: width .4s ease, transform .4s ease, gap .4s ease;
+  transform-origin: left top;
+}
+
+.field-grid.expanded-1 { width: 63%; gap: 7px; transform: scale(.94); }
+.field-grid.expanded-2 { width: 69%; gap: 6px; transform: scale(.87); }
+.field-grid.expanded-3 { width: 75%; gap: 5px; transform: scale(.80); }
+.field-grid.expanded-4 { width: 81%; gap: 4px; transform: scale(.73); }
+
+.forklift-fleet-visual {
+  min-height: 72px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px;
+  border-radius: 13px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+.mini-forklift {
+  position: relative;
+  width: 40px;
+  height: 32px;
+  opacity: .2;
+  filter: grayscale(.9);
+  transition: .2s ease;
+}
+
+.mini-forklift.active {
+  opacity: 1;
+  filter: none;
+  transform: translateY(-3px);
+}
+
+.mini-forklift::before {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 5px;
+  width: 21px;
+  height: 18px;
+  border-radius: 4px 5px 3px 3px;
+  background: #dda83d;
+  border: 2px solid #a97522;
+  box-shadow:
+    -9px 10px 0 -6px #262b28,
+    11px 10px 0 -6px #262b28;
+}
+
+.mini-forklift::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 25px;
+  background: #353a37;
+  box-shadow:
+    -5px 21px 0 #353a37,
+    0 21px 0 #353a37;
+}
+
+.land-map-preview {
+  min-height: 76px;
+  margin-bottom: 10px;
+  padding: 11px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+  border-radius: 13px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+.land-tile {
+  min-height: 50px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,.09);
+  background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.025) 0 6px, transparent 6px 12px),
+    #456f42;
+}
+
+.land-tile.owned::after {
+  content: "";
+  display: block;
+  width: 20px;
+  height: 27px;
+  margin: 11px auto 0;
+  background:
+    radial-gradient(circle at 50% 20%, #66b774 0 7px, transparent 8px),
+    radial-gradient(circle at 25% 50%, #4f9e60 0 7px, transparent 8px),
+    radial-gradient(circle at 75% 50%, #4b955a 0 7px, transparent 8px),
+    linear-gradient(#80502c,#80502c) center bottom / 4px 13px no-repeat;
+}
+
+.land-tile.new-land {
+  display: grid;
+  place-items: center;
+  background: rgba(215,170,80,.08);
+  border: 1px dashed rgba(215,170,80,.42);
+}
+
+.land-tile.new-land::after {
+  content: "+";
+  color: #e3bd68;
+  font-size: 1.7rem;
+  font-weight: 900;
+}
+
+.logistics-visual {
+  height: 70px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  border-radius: 13px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+.logistics-warehouse-icon {
+  width: 44px;
+  height: 35px;
+  position: relative;
+  background: #9c7548;
+  border-radius: 3px;
+}
+
+.logistics-warehouse-icon::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: -15px;
+  border-left: 27px solid transparent;
+  border-right: 27px solid transparent;
+  border-bottom: 18px solid #57422f;
+}
+
+.logistics-warehouse-icon::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  bottom: 0;
+  width: 20px;
+  height: 24px;
+  background: #68492f;
+}
+
+.logistics-truck-icon {
+  width: 53px;
+  height: 28px;
+  position: relative;
+  background: #49735e;
+  border-radius: 4px;
+}
+
+.logistics-truck-icon::before {
+  content: "";
+  position: absolute;
+  left: -17px;
+  bottom: 0;
+  width: 20px;
+  height: 22px;
+  border-radius: 6px 2px 2px 2px;
+  background: #dfa63d;
+}
+
+.logistics-truck-icon::after {
+  content: "";
+  position: absolute;
+  left: -10px;
+  right: 6px;
+  bottom: -6px;
+  height: 12px;
+  background:
+    radial-gradient(circle at 10px 6px, #242824 0 6px, transparent 7px),
+    radial-gradient(circle at calc(100% - 4px) 6px, #242824 0 6px, transparent 7px);
+}
+
+.logistics-arrows {
+  color: #e0b760;
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+.logistics-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.solid-button.red {
+  background: #ca6c58;
+  color: #fff4ec;
+}
+
+.plot.new-plot { animation: newPlotReveal .55s ease-out; }
+
+@keyframes newPlotReveal {
+  from { opacity: 0; transform: scale(.65); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width:760px) {
+  .field-grid.expanded-1,
+  .field-grid.expanded-2,
+  .field-grid.expanded-3,
+  .field-grid.expanded-4 {
+    width:94%;
+    transform:scale(.91);
+  }
+}

@@ -248,9 +248,92 @@
           </div>
         </section>
 
+        
+        <section class="management-card forklift-management-card">
+          <div class="card-heading">
+            <div><span class="kicker">LOJİSTİK</span><h3>Forklift Filosu</h3></div>
+            <span id="forkliftCountBadge" class="status-pill">1 / 5</span>
+          </div>
+
+          <div id="forkliftFleetVisual" class="forklift-fleet-visual">
+            <div class="mini-forklift"></div>
+            <div class="mini-forklift"></div>
+            <div class="mini-forklift"></div>
+            <div class="mini-forklift"></div>
+            <div class="mini-forklift"></div>
+          </div>
+
+          <div class="mini-stats">
+            <div><small>Forklift sayısı</small><strong id="forkliftCountValue">1</strong></div>
+            <div><small>Taşıma kapasitesi</small><strong id="forkliftCapacityValue">1 kütük</strong></div>
+          </div>
+
+          <div class="mini-stats">
+            <div><small>Bekleyen taşıma</small><strong id="forkliftQueueValue">0</strong></div>
+            <div><small>Aynı anda çalışan</small><strong id="activeForkliftValue">0</strong></div>
+          </div>
+
+          <button id="buyForkliftBtn" class="solid-button blue wide" type="button">
+            Forklift satın al
+          </button>
+        </section>
+
+        <section class="management-card land-management-card">
+          <div class="card-heading">
+            <div><span class="kicker">ARAZİ PAZARI</span><h3>Orman Arazisi</h3></div>
+            <span id="landCountBadge" class="status-pill">16 Parsel</span>
+          </div>
+
+          <div class="land-map-preview">
+            <div class="land-tile owned"></div>
+            <div class="land-tile owned"></div>
+            <div class="land-tile owned"></div>
+            <div class="land-tile new-land"></div>
+          </div>
+
+          <div class="mini-stats">
+            <div><small>Aktif parsel</small><strong id="landCountValue">16</strong></div>
+            <div><small>Harita ölçeği</small><strong id="mapScaleValue">%100</strong></div>
+          </div>
+
+          <div class="button-grid">
+            <button id="buyLandBtn" class="solid-button gold" type="button">Arazi satın al</button>
+            <button id="sellLandBtn" class="solid-button green" type="button">Arazi sat</button>
+          </div>
+          <p id="landStatus" class="muted status-line">Yeni arazi 4 tarla parseli açar.</p>
+        </section>
+
+        <section class="management-card logistics-center-card">
+          <div class="card-heading">
+            <div><span class="kicker">SATIŞ YÖNETİMİ</span><h3>Lojistik Merkezi</h3></div>
+            <span id="salesStatusBadge" class="status-pill">Satış Açık</span>
+          </div>
+
+          <div class="logistics-visual">
+            <div class="logistics-warehouse-icon"></div>
+            <div class="logistics-arrows">⇄</div>
+            <div class="logistics-truck-icon"></div>
+          </div>
+
+          <div class="mini-stats">
+            <div><small>Kütük satış fiyatı</small><strong>15 ₺</strong></div>
+            <div><small>Kereste satış fiyatı</small><strong>32 ₺</strong></div>
+          </div>
+
+          <div class="logistics-buttons">
+            <button id="pauseSalesBtn" class="solid-button red" type="button">Satışı durdur</button>
+            <button id="sellAllBtn" class="solid-button gold" type="button">Hepsini sat</button>
+            <button id="autoSalesBtn" class="solid-button blue full-row" type="button">Otomatik satışı aç</button>
+          </div>
+
+          <p id="logisticsStatus" class="muted status-line">
+            Firma talepleri stok oluştuğunda otomatik karşılanır.
+          </p>
+        </section>
+
         <section class="management-card demand-card">
           <div class="card-heading">
-            <div><span class="kicker">FİRMA TALEPLERİ</span><h3>Kereste Satışı</h3></div>
+            <div><span class="kicker">FİRMA TALEPLERİ</span><h3>Kütük ve Kereste</h3></div>
             <span class="status-pill gold-pill">Canlı Pazar</span>
           </div>
 
@@ -279,7 +362,7 @@
     <section class="update-dialog" role="dialog" aria-modal="true" aria-labelledby="updateTitle">
       <div class="update-header">
         <div>
-          <span class="kicker">SÜRÜM 1.1</span>
+          <span class="kicker">SÜRÜM 1.3</span>
           <h2 id="updateTitle">Bilgi Ekranı</h2>
           <p>Oyuna eklenen son yenilikler</p>
         </div>
@@ -338,10 +421,19 @@
         <article class="update-item forklift-update">
           <div class="update-icon forklift-update-icon" aria-hidden="true"></div>
           <div>
-            <strong>Kütük ve kereste satışları açıldı</strong>
-            <p>Firmalar artık hem kütük hem de kereste talep eder; ürün stokta varsa otomatik satın alır.</p>
+            <strong>Otomatik forklift ve çift ürün satışı düzeltildi</strong>
+            <p>Tarlalar açılışta görünür, forklift kesilen kütükleri otomatik toplar; firmalar hem kütük hem kereste satın alır.</p>
           </div>
         </article>
+      
+        <article class="update-item forklift-update">
+          <div class="update-icon forklift-update-icon" aria-hidden="true"></div>
+          <div>
+            <strong>Forklift filosu, arazi pazarı ve lojistik merkezi</strong>
+            <p>En fazla 5 forklift satın alınabilir, taşıma kapasitesi artar; yeni araziler alınabilir ve satışlar Lojistik Merkezi üzerinden yönetilir.</p>
+          </div>
+        </article>
+
       </div>
 
       <div class="update-footer">

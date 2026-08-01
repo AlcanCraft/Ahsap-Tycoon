@@ -1,4 +1,4 @@
-# Ahşap Tycoon v1.1
+# Ahşap Tycoon v1.3
 
 Bu sürümde metin/emoji ağırlıklı görünüm kaldırıldı ve gerçek oyun sahnesi yaklaşımına geçildi.
 
@@ -126,3 +126,34 @@ Kesimden sonra kütükler yaklaşık 3 saniye arazide görünür. Sonra otomatik
 - Kütük fiyatları keresteden daha düşüktür.
 - Stok yoksa firma bekler.
 - Süre dolarsa firma ayrılır ve yerine yeni firma gelir.
+
+
+## v1.2 kritik düzeltmeler
+
+- Tarlalar oyun açılır açılmaz görünür.
+- Eski kayıtlar güvenli biçimde yeni oyun motoruna aktarılır.
+- Kesilmiş kütükler otomatik olarak forklift sırasına alınır.
+- Forklift kütüğü araziden alıp fabrikaya otomatik teslim eder.
+- Forklift teslimatından sonra kütük stoğu artar.
+- Firmalar hem kütük hem kereste satın alabilir.
+- Kütük forklift teslimatından sonra satılır.
+- Kereste fabrika üretiminden sonra satılır.
+- Bilgi Ekranı sürüm 1.2 için yeniden açılır.
+- Otomatik orman ve otomatik fabrika sistemleri yeniden yazıldı.
+
+
+## v1.3 büyük yönetim güncellemesi
+
+- Forkliftler para ile satın alınabilir.
+- En fazla 5 forklift çalıştırılabilir.
+- Forklift sayısı arttıkça her forkliftin bir seferde taşıdığı kütük sayısı artar.
+- Birden fazla forklift aynı anda farklı arazilerden kütük toplayabilir.
+- Yeni arazi satın alındığında 4 yeni tarla açılır.
+- En fazla 32 parsel kullanılabilir.
+- Arazi genişledikçe tarla görünümü küçülür ve harita uzaklaşır.
+- Son satın alınan 4 parsel boşsa arazi satılabilir.
+- Lojistik Merkezi eklendi.
+- Satışlar tamamen durdurulabilir ve yeniden başlatılabilir.
+- “Hepsini sat” ile depodaki tüm kütük ve kereste anında satılabilir.
+- Firma talepleri için otomatik satış açılıp kapatılabilir.
+- Kütük ve kereste satışları ayrı fiyatlarla devam eder.
