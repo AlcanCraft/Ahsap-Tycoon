@@ -3,152 +3,232 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#163a2a" />
-  <title>Ahşap Tycoon v0.1</title>
+  <meta name="theme-color" content="#0f2a20" />
+  <title>Ahşap Tycoon v0.3</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div>
-      <p class="eyebrow">AHŞAP TYCOON</p>
-      <h1>Orman İşletmesi</h1>
-    </div>
-    <button id="resetBtn" class="ghost-button" type="button">Oyunu sıfırla</button>
-  </header>
-
-  <main class="layout">
-    <section class="game-area panel">
-      <div class="section-heading">
+  <div class="game-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">AT</div>
         <div>
-          <p class="eyebrow">ARAZİ</p>
-          <h2>Fidanlık</h2>
-        </div>
-        <div class="legend">
-          <span>🟫 Boş</span>
-          <span>🌱 Fidan</span>
-          <span>🌲 Hazır</span>
+          <p class="eyebrow">ALCANCRAFT</p>
+          <h1>Ahşap Tycoon</h1>
         </div>
       </div>
 
-      <div id="fieldGrid" class="field-grid" aria-label="Fidanlık alanı"></div>
-
-      <div class="hint">
-        Boş araziye tıklayarak fidan dik. Ağaç olgunlaşınca tekrar tıklayıp kes.
+      <div class="hud">
+        <article class="hud-card">
+          <span>💰 Para</span>
+          <strong id="moneyValue">0 ₺</strong>
+        </article>
+        <article class="hud-card">
+          <span>🪵 Kütük</span>
+          <strong id="logValue">0 / 100</strong>
+        </article>
+        <article class="hud-card">
+          <span>📦 Kereste</span>
+          <strong id="lumberValue">0 / 100</strong>
+        </article>
+        <article class="hud-card">
+          <span>👷 İşçi</span>
+          <strong id="workerValue">0 / 0</strong>
+        </article>
       </div>
-    </section>
 
-    <aside class="sidebar">
-      <section class="panel resources">
-        <div class="section-heading">
+      <button id="resetBtn" class="icon-button" type="button" title="Oyunu sıfırla">↻</button>
+    </header>
+
+    <main class="main-grid">
+      <section class="world panel">
+        <div class="panel-heading">
           <div>
-            <p class="eyebrow">İŞLETME</p>
-            <h2>Kaynaklar</h2>
+            <p class="eyebrow">ORMAN SAHASI</p>
+            <h2>Üretim Bölgesi</h2>
           </div>
-          <span id="levelBadge" class="badge">Seviye 1</span>
+          <div class="mode-box">
+            <span id="forestModeBadge" class="badge">Manuel</span>
+            <span id="forestWorkerInfo" class="muted">0 işçi arazide</span>
+          </div>
         </div>
 
-        <div class="resource-grid">
-          <article class="resource-card">
-            <span>💰 Para</span>
-            <strong id="moneyValue">0 ₺</strong>
-          </article>
-          <article class="resource-card">
-            <span>🪵 Kütük</span>
-            <strong id="logValue">0 / 100</strong>
-          </article>
-          <article class="resource-card">
-            <span>📦 Kereste</span>
-            <strong id="lumberValue">0 / 100</strong>
-          </article>
-          <article class="resource-card">
-            <span>👷 İşçi</span>
-            <strong id="workerValue">0 / 0</strong>
-          </article>
+        <div class="world-stage">
+          <div class="mountains"></div>
+          <div class="river"></div>
+
+          <div class="building building-lodging" aria-label="İşçi lojmanı">
+            <div class="building-icon">🏘️</div>
+            <div class="building-label">
+              <strong>İşçi Lojmanı</strong>
+              <span id="lodgingMapLevel">Seviye 1</span>
+            </div>
+          </div>
+
+          <div class="building building-factory" aria-label="Kereste fabrikası">
+            <div class="chimney">
+              <span></span><span></span><span></span>
+            </div>
+            <div class="building-icon">🏭</div>
+            <div class="building-label">
+              <strong>Kereste Fabrikası</strong>
+              <span id="factoryMapLevel">Seviye 1</span>
+            </div>
+          </div>
+
+          <div class="building building-warehouse" aria-label="Kütük deposu">
+            <div class="building-icon">🏚️</div>
+            <div class="building-label">
+              <strong>Depolar</strong>
+              <span id="warehouseMapInfo">Kütük 0 • Kereste 0</span>
+            </div>
+          </div>
+
+          <div id="fieldGrid" class="field-grid" aria-label="Fidanlık alanı"></div>
+
+          <div class="delivery-road">
+            <span class="truck">🚚</span>
+            <span class="road-label">Sevkiyat yolu — sonraki sürüm</span>
+          </div>
+        </div>
+
+        <div class="forest-toolbar">
+          <button id="manualForestBtn" class="action-button primary" type="button">
+            <span>🪓</span>
+            <span>
+              <strong>Elle Kütük Üret</strong>
+              <small>Hazır ağacı kes veya yeni fidan dik</small>
+            </span>
+          </button>
+
+          <button id="autoForestBtn" class="action-button secondary" type="button">
+            <span>⚙️</span>
+            <span>
+              <strong>Otomatik Üretimi Aç</strong>
+              <small>İşçiler dikim, kesim ve yeniden ekim yapar</small>
+            </span>
+          </button>
+        </div>
+
+        <div id="forestStatus" class="notification info">
+          Manuel mod açık. Araziye tıklayabilir veya üretim düğmesini kullanabilirsin.
         </div>
       </section>
 
-      <section class="panel">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">ÜRETİM</p>
-            <h2>Kereste Fabrikası</h2>
+      <aside class="management">
+        <section class="panel management-card">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">ÜRETİM TESİSİ</p>
+              <h2>Kereste Fabrikası</h2>
+            </div>
+            <span id="factoryLevel" class="badge">Sv. 1</span>
           </div>
-          <span id="factoryLevel" class="badge">Sv. 1</span>
-        </div>
 
-        <div class="production-status">
-          <div>
-            <span>İşleme süresi</span>
-            <strong id="processTime">10 sn</strong>
+          <div class="factory-visual">
+            <div class="saw-line">
+              <span class="log-piece">🪵</span>
+              <span class="saw">⚙️</span>
+              <span class="board-piece">📦</span>
+            </div>
           </div>
-          <div>
-            <span>Gerekli işçi</span>
-            <strong id="factoryWorkers">2</strong>
+
+          <div class="stats-row">
+            <div>
+              <span>İşleme</span>
+              <strong id="processTime">10 sn</strong>
+            </div>
+            <div>
+              <span>Gerekli işçi</span>
+              <strong id="factoryWorkers">2</strong>
+            </div>
           </div>
-        </div>
 
-        <div class="progress-shell" aria-label="Fabrika üretim ilerlemesi">
-          <div id="factoryProgress" class="progress-bar"></div>
-        </div>
-        <p id="factoryStatus" class="status-text">Fabrika bekliyor.</p>
+          <div class="progress-shell">
+            <div id="factoryProgress" class="progress-bar"></div>
+          </div>
+          <p id="factoryStatus" class="status-text">Fabrika bekliyor.</p>
 
-        <div class="button-row">
-          <button id="processBtn" class="primary-button" type="button">1 kütüğü işle</button>
-          <button id="upgradeFactoryBtn" class="secondary-button" type="button">Fabrikayı yükselt</button>
+          <div class="stack-buttons">
+            <button id="processBtn" class="primary-button" type="button">1 kütüğü işle</button>
+            <button id="upgradeFactoryBtn" class="secondary-button" type="button">Fabrikayı yükselt</button>
+          </div>
+        </section>
+
+        <section class="panel management-card">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">ÇALIŞAN YÖNETİMİ</p>
+              <h2>İşçi Lojmanı</h2>
+            </div>
+            <span id="lodgingLevel" class="badge">Sv. 1</span>
+          </div>
+
+          <div class="worker-distribution">
+            <div class="worker-line">
+              <span>Arazi</span>
+              <strong id="fieldWorkersValue">0</strong>
+            </div>
+            <div class="worker-line">
+              <span>Fabrika</span>
+              <strong id="factoryWorkersValue">0</strong>
+            </div>
+            <div class="worker-line">
+              <span>Boşta</span>
+              <strong id="idleWorkersValue">0</strong>
+            </div>
+          </div>
+
+          <div class="stats-row">
+            <div>
+              <span>Kapasite</span>
+              <strong id="lodgingCapacity">10</strong>
+            </div>
+            <div>
+              <span>Boş yer</span>
+              <strong id="lodgingFree">10</strong>
+            </div>
+          </div>
+
+          <div class="stack-buttons">
+            <button id="hireBtn" class="primary-button" type="button">İşçi al</button>
+            <button id="upgradeLodgingBtn" class="secondary-button" type="button">Lojmanı yükselt</button>
+          </div>
+        </section>
+
+        <section class="panel management-card market-card">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">PAZAR</p>
+              <h2>Kereste Satışı</h2>
+            </div>
+            <span class="badge gold">25 ₺ / adet</span>
+          </div>
+
+          <div class="market-visual">
+            <span>📦</span>
+            <span class="market-arrow">→</span>
+            <span>💰</span>
+          </div>
+
+          <button id="sellBtn" class="sell-button" type="button">Tüm keresteyi sat</button>
+        </section>
+      </aside>
+
+      <section class="panel log-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">İŞLETME AKIŞI</p>
+            <h2>Canlı Olay Günlüğü</h2>
+          </div>
+          <span id="gameLevelBadge" class="badge gold">İşletme Seviyesi 1</span>
         </div>
+        <div id="eventLog" class="event-log" aria-live="polite"></div>
       </section>
-
-      <section class="panel">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">ÇALIŞANLAR</p>
-            <h2>İşçi Lojmanı</h2>
-          </div>
-          <span id="lodgingLevel" class="badge">Sv. 1</span>
-        </div>
-
-        <div class="production-status">
-          <div>
-            <span>Kapasite</span>
-            <strong id="lodgingCapacity">10</strong>
-          </div>
-          <div>
-            <span>Boş yer</span>
-            <strong id="lodgingFree">10</strong>
-          </div>
-        </div>
-
-        <div class="button-row">
-          <button id="hireBtn" class="primary-button" type="button">İşçi al</button>
-          <button id="upgradeLodgingBtn" class="secondary-button" type="button">Lojmanı yükselt</button>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">SATIŞ</p>
-            <h2>Kereste Pazarı</h2>
-          </div>
-          <span class="badge">25 ₺ / adet</span>
-        </div>
-        <button id="sellBtn" class="sell-button" type="button">Tüm keresteyi sat</button>
-      </section>
-    </aside>
-
-    <section class="panel log-panel">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">GÜNLÜK</p>
-          <h2>İşletme kayıtları</h2>
-        </div>
-      </div>
-      <div id="eventLog" class="event-log" aria-live="polite"></div>
-    </section>
-  </main>
+    </main>
+  </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
   <script src="game.js"></script>
 </body>
 </html>

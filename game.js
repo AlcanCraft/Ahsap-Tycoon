@@ -1,8 +1,8 @@
 const CONFIG = {
   plotCount: 16,
   seedCost: 5,
-  growthSeconds: 20,
-  logCapacity: 100,
+  growthSeconds: 18,
+  forestAutomationIntervalMs: 1600,
   lumberSellPrice: 25,
   hireCost: 50,
   workerSalaryPerMinute: 1,
@@ -35,6 +35,8 @@ const initialState = () => ({
   workers: 4,
   factoryLevel: 1,
   lodgingLevel: 1,
+  autoForest: false,
+  lastForestAutomationAt: 0,
   processing: null,
   plots: Array.from({ length: CONFIG.plotCount }, (_, id) => ({
     id,
@@ -46,6 +48,7 @@ const initialState = () => ({
 });
 
 let state = loadGame() ?? initialState();
+migrateState();
 let toastTimer = null;
 
 const els = {
@@ -54,7 +57,6 @@ const els = {
   logs: document.querySelector("#logValue"),
   lumber: document.querySelector("#lumberValue"),
   workers: document.querySelector("#workerValue"),
-  levelBadge: document.querySelector("#levelBadge"),
   factoryLevel: document.querySelector("#factoryLevel"),
   processTime: document.querySelector("#processTime"),
   factoryWorkers: document.querySelector("#factoryWorkers"),
@@ -70,8 +72,27 @@ const els = {
   sellBtn: document.querySelector("#sellBtn"),
   eventLog: document.querySelector("#eventLog"),
   toast: document.querySelector("#toast"),
-  resetBtn: document.querySelector("#resetBtn")
+  resetBtn: document.querySelector("#resetBtn"),
+  forestModeBadge: document.querySelector("#forestModeBadge"),
+  forestStatus: document.querySelector("#forestStatus"),
+  forestWorkerInfo: document.querySelector("#forestWorkerInfo"),
+  manualForestBtn: document.querySelector("#manualForestBtn"),
+  autoForestBtn: document.querySelector("#autoForestBtn"),
+  fieldWorkersValue: document.querySelector("#fieldWorkersValue"),
+  factoryWorkersValue: document.querySelector("#factoryWorkersValue"),
+  idleWorkersValue: document.querySelector("#idleWorkersValue"),
+  lodgingMapLevel: document.querySelector("#lodgingMapLevel"),
+  factoryMapLevel: document.querySelector("#factoryMapLevel"),
+  warehouseMapInfo: document.querySelector("#warehouseMapInfo"),
+  gameLevelBadge: document.querySelector("#gameLevelBadge")
 };
+
+function migrateState() {
+  if (typeof state.autoForest !== "boolean") state.autoForest = false;
+  if (!state.lastForestAutomationAt) state.lastForestAutomationAt = 0;
+  if (!state.lastSalaryAt) state.lastSalaryAt = Date.now();
+  if (!Array.isArray(state.logsHistory)) state.logsHistory = [];
+}
 
 function currency(value) {
   return new Intl.NumberFormat("tr-TR").format(Math.floor(value)) + " ₺";
@@ -85,8 +106,18 @@ function lodgingConfig() {
   return CONFIG.lodging.levels[state.lodgingLevel - 1];
 }
 
+function factoryAssignedWorkers() {
+  return Math.min(state.workers, factoryConfig().workers);
+}
+
 function availableFieldWorkers() {
-  return Math.max(0, state.workers - factoryConfig().workers);
+  return Math.max(0, state.workers - factoryAssignedWorkers());
+}
+
+function idleWorkers() {
+  const plotsThatNeedWork = state.plots.filter(p => p.state === "empty" || p.state === "ready").length;
+  const fieldUsed = Math.min(availableFieldWorkers(), plotsThatNeedWork);
+  return Math.max(0, state.workers - factoryAssignedWorkers() - fieldUsed);
 }
 
 function addLog(message) {
@@ -94,7 +125,7 @@ function addLog(message) {
     time: new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" }),
     message
   });
-  state.logsHistory = state.logsHistory.slice(0, CONFIG.logCapacity);
+  state.logsHistory = state.logsHistory.slice(0, 80);
   renderLog();
 }
 
@@ -102,7 +133,7 @@ function showToast(message) {
   els.toast.textContent = message;
   els.toast.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => els.toast.classList.remove("show"), 2200);
+  toastTimer = setTimeout(() => els.toast.classList.remove("show"), 2100);
 }
 
 function saveGame() {
@@ -122,8 +153,7 @@ function loadGame() {
 }
 
 function resetGame() {
-  const confirmed = confirm("Tüm ilerleme silinsin mi?");
-  if (!confirmed) return;
+  if (!confirm("Tüm ilerleme silinsin mi?")) return;
   state = initialState();
   localStorage.removeItem("ahsapTycoonSave");
   addLog("Yeni işletme kuruldu.");
@@ -132,17 +162,48 @@ function resetGame() {
 
 function plotVisual(plot) {
   if (plot.state === "empty") {
-    return { icon: "🟫", label: `Fidan dik (${CONFIG.seedCost} ₺)`, className: "" };
+    return { icon: "🟫", label: `Fidan dik • ${CONFIG.seedCost} ₺`, className: "" };
   }
+
   if (plot.state === "ready") {
-    return { icon: "🌲", label: "Kesime hazır", className: "ready" };
+    return { icon: "🌲", label: "Kesime hazır", className: "ready", ratio: 1 };
   }
 
   const elapsed = (Date.now() - plot.plantedAt) / 1000;
   const ratio = Math.min(1, elapsed / CONFIG.growthSeconds);
 
-  if (ratio < .45) return { icon: "🌱", label: "Fidan büyüyor", className: "seedling", ratio };
+  if (ratio < .4) return { icon: "🌱", label: "Fidan büyüyor", className: "seedling", ratio };
   return { icon: "🌳", label: "Ağaç büyüyor", className: "growing", ratio };
+}
+
+function plantPlot(plot, source = "manuel") {
+  if (!plot || plot.state !== "empty") return false;
+  if (state.money < CONFIG.seedCost) return false;
+  if (availableFieldWorkers() < 1) return false;
+
+  state.money -= CONFIG.seedCost;
+  plot.state = "growing";
+  plot.plantedAt = Date.now();
+
+  if (source === "manuel") {
+    addLog(`${plot.id + 1}. araziye fidan dikildi.`);
+  }
+  return true;
+}
+
+function harvestPlot(plot, source = "manuel") {
+  if (!plot || plot.state !== "ready") return false;
+  if (availableFieldWorkers() < 1) return false;
+  if (state.logs >= CONFIG.logStorage) return false;
+
+  state.logs += 1;
+  plot.state = "empty";
+  plot.plantedAt = null;
+
+  if (source === "manuel") {
+    addLog("Ağaç kesildi. 1 kütük depoya taşındı.");
+  }
+  return true;
 }
 
 function clickPlot(id) {
@@ -150,36 +211,17 @@ function clickPlot(id) {
   if (!plot) return;
 
   if (plot.state === "empty") {
-    if (state.money < CONFIG.seedCost) {
-      showToast("Fidan için paran yetmiyor.");
-      return;
-    }
-    if (availableFieldWorkers() < 1) {
-      showToast("Arazide çalışacak işçi yok.");
-      return;
-    }
-    state.money -= CONFIG.seedCost;
-    plot.state = "growing";
-    plot.plantedAt = Date.now();
-    addLog(`${id + 1}. araziye fidan dikildi.`);
+    if (state.money < CONFIG.seedCost) return showToast("Fidan için paran yetmiyor.");
+    if (availableFieldWorkers() < 1) return showToast("Arazide çalışacak işçi yok.");
+    plantPlot(plot, "manuel");
     render();
     return;
   }
 
   if (plot.state === "ready") {
-    if (availableFieldWorkers() < 1) {
-      showToast("Kesim için arazide işçi bulunmuyor.");
-      return;
-    }
-    if (state.logs >= CONFIG.logStorage) {
-      showToast("Kütük deposu dolu.");
-      return;
-    }
-
-    state.logs += 1;
-    plot.state = "empty";
-    plot.plantedAt = null;
-    addLog(`Ağaç kesildi. 1 kütük depoya taşındı.`);
+    if (availableFieldWorkers() < 1) return showToast("Kesim için arazide işçi yok.");
+    if (state.logs >= CONFIG.logStorage) return showToast("Kütük deposu dolu.");
+    harvestPlot(plot, "manuel");
     render();
     return;
   }
@@ -187,27 +229,82 @@ function clickPlot(id) {
   showToast("Ağaç henüz büyüyor.");
 }
 
+function runManualForestCycle() {
+  if (availableFieldWorkers() < 1) return showToast("Arazide çalışacak işçi yok.");
+
+  const ready = state.plots.find(p => p.state === "ready");
+  if (ready) {
+    if (state.logs >= CONFIG.logStorage) return showToast("Kütük deposu dolu.");
+    harvestPlot(ready, "manuel");
+    render();
+    return;
+  }
+
+  const empty = state.plots.find(p => p.state === "empty");
+  if (empty) {
+    if (state.money < CONFIG.seedCost) return showToast("Fidan için paran yetmiyor.");
+    plantPlot(empty, "manuel");
+    render();
+    return;
+  }
+
+  showToast("Bütün ağaçlar şu anda büyüyor.");
+}
+
+function toggleAutoForest() {
+  state.autoForest = !state.autoForest;
+  state.lastForestAutomationAt = 0;
+  addLog(state.autoForest ? "Otomatik orman üretimi açıldı." : "Otomatik orman üretimi kapatıldı.");
+  render();
+}
+
+function runForestAutomation() {
+  if (!state.autoForest) return;
+
+  const now = Date.now();
+  if (now - state.lastForestAutomationAt < CONFIG.forestAutomationIntervalMs) return;
+  state.lastForestAutomationAt = now;
+
+  let actions = availableFieldWorkers();
+  if (actions < 1) return;
+
+  let harvested = 0;
+  let planted = 0;
+
+  for (const plot of state.plots.filter(p => p.state === "ready")) {
+    if (actions <= 0 || state.logs >= CONFIG.logStorage) break;
+    if (harvestPlot(plot, "otomatik")) {
+      harvested++;
+      actions--;
+    }
+  }
+
+  for (const plot of state.plots.filter(p => p.state === "empty")) {
+    if (actions <= 0 || state.money < CONFIG.seedCost) break;
+    if (plantPlot(plot, "otomatik")) {
+      planted++;
+      actions--;
+    }
+  }
+
+  if (harvested || planted) {
+    const text = [
+      harvested ? `${harvested} ağaç kesildi` : "",
+      planted ? `${planted} fidan dikildi` : ""
+    ].filter(Boolean).join(", ");
+    addLog(`Otomatik ekip: ${text}.`);
+  }
+}
+
 function startProcessing() {
   const cfg = factoryConfig();
 
-  if (state.processing) {
-    showToast("Fabrika zaten çalışıyor.");
-    return;
-  }
-  if (state.logs < 1) {
-    showToast("İşlemek için kütük yok.");
-    return;
-  }
-  if (state.lumber >= CONFIG.lumberStorage) {
-    showToast("Kereste deposu dolu.");
-    return;
-  }
-  if (state.workers < cfg.workers) {
-    showToast(`Fabrika için ${cfg.workers} işçi gerekiyor.`);
-    return;
-  }
+  if (state.processing) return showToast("Fabrika zaten çalışıyor.");
+  if (state.logs < 1) return showToast("İşlemek için kütük yok.");
+  if (state.lumber >= CONFIG.lumberStorage) return showToast("Kereste deposu dolu.");
+  if (state.workers < cfg.workers) return showToast(`Fabrika için ${cfg.workers} işçi gerekiyor.`);
 
-  state.logs -= 1;
+  state.logs--;
   state.processing = {
     startedAt: Date.now(),
     finishAt: Date.now() + cfg.processSeconds * 1000
@@ -217,26 +314,22 @@ function startProcessing() {
 }
 
 function finishProcessing() {
-  if (!state.processing) return;
-  if (Date.now() < state.processing.finishAt) return;
-
+  if (!state.processing || Date.now() < state.processing.finishAt) return;
   state.processing = null;
 
   if (state.lumber < CONFIG.lumberStorage) {
-    state.lumber += 1;
+    state.lumber++;
     addLog("1 kütük, 1 keresteye dönüştürüldü.");
   } else {
-    state.logs += 1;
-    addLog("Kereste deposu dolu olduğu için kütük geri alındı.");
+    state.logs++;
+    addLog("Kereste deposu dolu; kütük geri alındı.");
   }
   render();
 }
 
 function sellLumber() {
-  if (state.lumber <= 0) {
-    showToast("Satılacak kereste yok.");
-    return;
-  }
+  if (state.lumber <= 0) return showToast("Satılacak kereste yok.");
+
   const sold = state.lumber;
   const revenue = sold * CONFIG.lumberSellPrice;
   state.lumber = 0;
@@ -248,88 +341,68 @@ function sellLumber() {
 
 function hireWorker() {
   const lodging = lodgingConfig();
-  if (state.workers >= lodging.capacity) {
-    showToast("Lojmanda boş yer yok.");
-    return;
-  }
-  if (state.money < CONFIG.hireCost) {
-    showToast("Yeni işçi için paran yetmiyor.");
-    return;
-  }
+  if (state.workers >= lodging.capacity) return showToast("Lojmanda boş yer yok.");
+  if (state.money < CONFIG.hireCost) return showToast("Yeni işçi için paran yetmiyor.");
+
   state.money -= CONFIG.hireCost;
-  state.workers += 1;
-  addLog("Yeni işçi işe alındı.");
+  state.workers++;
+  addLog("Yeni işçi işe alındı. İş dağılımı otomatik güncellendi.");
   render();
 }
 
 function upgradeFactory() {
   const cfg = factoryConfig();
-  if (cfg.upgradeCost === null) {
-    showToast("Fabrika en yüksek seviyede.");
-    return;
-  }
-  if (state.money < cfg.upgradeCost) {
-    showToast("Fabrika yükseltmesi için paran yetmiyor.");
-    return;
-  }
+  if (cfg.upgradeCost === null) return showToast("Fabrika en yüksek seviyede.");
+  if (state.money < cfg.upgradeCost) return showToast("Fabrika yükseltmesi için paran yetmiyor.");
 
-  const nextCfg = CONFIG.factory.levels[state.factoryLevel];
-  if (state.workers < nextCfg.workers) {
-    showToast(`Yeni seviye için en az ${nextCfg.workers} işçi gerekiyor.`);
-    return;
+  const next = CONFIG.factory.levels[state.factoryLevel];
+  if (state.workers < next.workers) {
+    return showToast(`Yeni seviye için en az ${next.workers} işçi gerekiyor.`);
   }
 
   state.money -= cfg.upgradeCost;
-  state.factoryLevel += 1;
-  addLog(`Fabrika seviye ${state.factoryLevel} oldu.`);
+  state.factoryLevel++;
+  addLog(`Kereste fabrikası seviye ${state.factoryLevel} oldu.`);
   render();
 }
 
 function upgradeLodging() {
   const cfg = lodgingConfig();
-  if (cfg.upgradeCost === null) {
-    showToast("Lojman en yüksek seviyede.");
-    return;
-  }
-  if (state.money < cfg.upgradeCost) {
-    showToast("Lojman yükseltmesi için paran yetmiyor.");
-    return;
-  }
+  if (cfg.upgradeCost === null) return showToast("Lojman en yüksek seviyede.");
+  if (state.money < cfg.upgradeCost) return showToast("Lojman yükseltmesi için paran yetmiyor.");
 
   state.money -= cfg.upgradeCost;
-  state.lodgingLevel += 1;
+  state.lodgingLevel++;
   addLog(`İşçi lojmanı seviye ${state.lodgingLevel} oldu.`);
   render();
 }
 
 function paySalaries() {
-  const now = Date.now();
   const minute = 60_000;
+  const now = Date.now();
   if (now - state.lastSalaryAt < minute) return;
 
-  const elapsedMinutes = Math.floor((now - state.lastSalaryAt) / minute);
-  const salary = state.workers * CONFIG.workerSalaryPerMinute * elapsedMinutes;
-  state.lastSalaryAt += elapsedMinutes * minute;
+  const elapsed = Math.floor((now - state.lastSalaryAt) / minute);
+  const salary = state.workers * CONFIG.workerSalaryPerMinute * elapsed;
+  state.lastSalaryAt += elapsed * minute;
   state.money -= salary;
-  addLog(`${elapsedMinutes} dakikalık işçi maaşı ödendi: ${currency(salary)}.`);
+  addLog(`${elapsed} dakikalık maaş ödendi: ${currency(salary)}.`);
   if (state.money < 0) showToast("İşletme borca girdi.");
 }
 
 function updateGrowth() {
   const now = Date.now();
-  let changed = false;
+  let count = 0;
 
   for (const plot of state.plots) {
     if (plot.state !== "growing" || !plot.plantedAt) continue;
     if (now - plot.plantedAt >= CONFIG.growthSeconds * 1000) {
       plot.state = "ready";
-      changed = true;
+      count++;
     }
   }
 
-  if (changed) {
-    addLog("Bir veya daha fazla ağaç kesime hazır.");
-  }
+  if (count > 0) addLog(`${count} ağaç kesime hazır hale geldi.`);
 }
 
 function renderPlots() {
@@ -346,7 +419,10 @@ function renderPlots() {
         <span class="plot-icon">${visual.icon}</span>
         <span class="plot-label">${visual.label}</span>
       </span>
-      ${plot.state === "growing" ? `<span class="plot-progress"><span style="width:${Math.round((visual.ratio ?? 0) * 100)}%"></span></span>` : ""}
+      ${plot.state === "growing" ? `
+        <span class="plot-progress">
+          <span style="width:${Math.round((visual.ratio ?? 0) * 100)}%"></span>
+        </span>` : ""}
     `;
     button.addEventListener("click", () => clickPlot(plot.id));
     els.fieldGrid.appendChild(button);
@@ -359,8 +435,7 @@ function renderLog() {
         <div class="log-entry">
           <time>${entry.time}</time>
           <span>${entry.message}</span>
-        </div>
-      `).join("")
+        </div>`).join("")
     : `<div class="log-entry"><span>Henüz kayıt yok.</span></div>`;
 }
 
@@ -368,45 +443,59 @@ function render() {
   const factory = factoryConfig();
   const lodging = lodgingConfig();
   const fieldWorkers = availableFieldWorkers();
+  const assignedFactory = factoryAssignedWorkers();
+  const idle = idleWorkers();
 
   els.money.textContent = currency(state.money);
   els.logs.textContent = `${state.logs} / ${CONFIG.logStorage}`;
   els.lumber.textContent = `${state.lumber} / ${CONFIG.lumberStorage}`;
   els.workers.textContent = `${state.workers} / ${lodging.capacity}`;
-  els.levelBadge.textContent = `Seviye ${Math.max(state.factoryLevel, state.lodgingLevel)}`;
 
   els.factoryLevel.textContent = `Sv. ${state.factoryLevel}`;
   els.processTime.textContent = `${factory.processSeconds} sn`;
-  els.factoryWorkers.textContent = `${factory.workers}`;
+  els.factoryWorkers.textContent = factory.workers;
   els.processBtn.disabled = Boolean(state.processing);
-
-  const factoryUpgradeText = factory.upgradeCost === null
+  els.upgradeFactoryBtn.textContent = factory.upgradeCost === null
     ? "Maksimum seviye"
-    : `Yükselt (${currency(factory.upgradeCost)})`;
-  els.upgradeFactoryBtn.textContent = factoryUpgradeText;
+    : `Yükselt • ${currency(factory.upgradeCost)}`;
   els.upgradeFactoryBtn.disabled = factory.upgradeCost === null;
 
   els.lodgingLevel.textContent = `Sv. ${state.lodgingLevel}`;
   els.lodgingCapacity.textContent = lodging.capacity;
   els.lodgingFree.textContent = Math.max(0, lodging.capacity - state.workers);
-  els.hireBtn.textContent = `İşçi al (${currency(CONFIG.hireCost)})`;
-
-  const lodgingUpgradeText = lodging.upgradeCost === null
+  els.hireBtn.textContent = `İşçi al • ${currency(CONFIG.hireCost)}`;
+  els.upgradeLodgingBtn.textContent = lodging.upgradeCost === null
     ? "Maksimum seviye"
-    : `Yükselt (${currency(lodging.upgradeCost)})`;
-  els.upgradeLodgingBtn.textContent = lodgingUpgradeText;
+    : `Yükselt • ${currency(lodging.upgradeCost)}`;
   els.upgradeLodgingBtn.disabled = lodging.upgradeCost === null;
 
+  els.fieldWorkersValue.textContent = fieldWorkers;
+  els.factoryWorkersValue.textContent = assignedFactory;
+  els.idleWorkersValue.textContent = idle;
+  els.forestWorkerInfo.textContent = `${fieldWorkers} işçi arazide`;
+
+  els.forestModeBadge.textContent = state.autoForest ? "Otomatik" : "Manuel";
+  els.autoForestBtn.querySelector("strong").textContent = state.autoForest
+    ? "Otomatik Üretimi Kapat"
+    : "Otomatik Üretimi Aç";
+  els.forestStatus.textContent = state.autoForest
+    ? `Otomatik ekip aktif. ${fieldWorkers} müsait işçi fidan dikiyor, olgun ağaçları kesiyor ve yeniden ekim yapıyor.`
+    : "Manuel mod açık. Araziye tıklayabilir veya üretim düğmesini kullanabilirsin.";
+
   els.sellBtn.textContent = state.lumber > 0
-    ? `${state.lumber} keresteyi sat (${currency(state.lumber * CONFIG.lumberSellPrice)})`
+    ? `${state.lumber} keresteyi sat • ${currency(state.lumber * CONFIG.lumberSellPrice)}`
     : "Tüm keresteyi sat";
+
+  els.lodgingMapLevel.textContent = `Seviye ${state.lodgingLevel} • ${state.workers}/${lodging.capacity} işçi`;
+  els.factoryMapLevel.textContent = `Seviye ${state.factoryLevel} • ${factory.processSeconds} sn`;
+  els.warehouseMapInfo.textContent = `Kütük ${state.logs} • Kereste ${state.lumber}`;
+  els.gameLevelBadge.textContent = `İşletme Seviyesi ${Math.max(state.factoryLevel, state.lodgingLevel)}`;
 
   if (!state.processing) {
     els.factoryProgress.style.width = "0%";
-    els.factoryStatus.textContent =
-      state.workers < factory.workers
-        ? `Fabrika için ${factory.workers} işçi gerekiyor.`
-        : `Fabrika bekliyor. Arazide ${fieldWorkers} işçi çalışabilir.`;
+    els.factoryStatus.textContent = state.workers < factory.workers
+      ? `Fabrika için ${factory.workers} işçi gerekiyor.`
+      : "Fabrika bekliyor.";
   }
 
   renderPlots();
@@ -416,16 +505,18 @@ function render() {
 
 function updateProcessingUI() {
   if (!state.processing) return;
-  const cfg = factoryConfig();
-  const total = cfg.processSeconds * 1000;
+
+  const total = factoryConfig().processSeconds * 1000;
   const elapsed = Date.now() - state.processing.startedAt;
-  const ratio = Math.max(0, Math.min(1, elapsed / total));
+  const ratio = Math.min(1, Math.max(0, elapsed / total));
   const remaining = Math.max(0, Math.ceil((state.processing.finishAt - Date.now()) / 1000));
 
   els.factoryProgress.style.width = `${Math.round(ratio * 100)}%`;
-  els.factoryStatus.textContent = `Üretim sürüyor: ${remaining} saniye kaldı.`;
+  els.factoryStatus.textContent = `Üretim devam ediyor: ${remaining} saniye kaldı.`;
 }
 
+els.manualForestBtn.addEventListener("click", runManualForestCycle);
+els.autoForestBtn.addEventListener("click", toggleAutoForest);
 els.processBtn.addEventListener("click", startProcessing);
 els.sellBtn.addEventListener("click", sellLumber);
 els.hireBtn.addEventListener("click", hireWorker);
@@ -434,13 +525,14 @@ els.upgradeLodgingBtn.addEventListener("click", upgradeLodging);
 els.resetBtn.addEventListener("click", resetGame);
 
 if (!state.logsHistory.length) {
-  addLog("Ahşap Tycoon v0.1 başladı. İlk fidanını dik.");
+  addLog("Ahşap Tycoon v0.3 başladı. İlk fidanını dik.");
 }
 
 render();
 
 setInterval(() => {
   updateGrowth();
+  runForestAutomation();
   finishProcessing();
   paySalaries();
   updateProcessingUI();

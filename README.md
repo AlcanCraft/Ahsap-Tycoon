@@ -1,46 +1,33 @@
-# Ahşap Tycoon v0.1
+# Ahşap Tycoon v0.3
 
-Tarayıcıda çalışan ilk oynanabilir prototip.
+Gerçek Tycoon görünümüne geçilen ilk görsel sürüm.
 
-## Özellikler
+## Bu sürümde
 
-- 4x4 arazi
-- Fidan dikme
-- Zamanla ağaç büyümesi
-- Ağaç kesme ve kütük depolama
-- Kütüğü keresteye dönüştürme
+- Yeni üst kaynak çubuğu
+- Harita üzerinde fabrika, depo ve işçi lojmanı
+- İzometrik arazi hissi
+- Hareketli ağaçlar, fabrika bacası ve kamyon animasyonu
+- Elle kütük üretimi
+- Otomatik kütük üretimini açma/kapatma
+- İşçilerin otomatik dikim, kesim ve yeniden ekim yapması
+- Otomatik işçi dağılımı
+- Fabrika üretim animasyonu
 - Kereste satışı
-- İşçi alma
-- İşçi lojmanı yükseltme
-- Fabrika yükseltme
-- Maaş gideri
+- Lojman ve fabrika seviye sistemi
 - Tarayıcıda otomatik kayıt
 
-## Bilgisayarda test etme
+## GitHub'a güncelleme
 
-1. ZIP dosyasını çıkar.
-2. `index.html` dosyasına çift tıkla.
-3. Oyun tarayıcıda açılır.
+ZIP içindeki şu dört dosyayı mevcut depondaki dosyaların üzerine yükle:
 
-Sunucu kurmaya gerek yoktur.
+- `index.html`
+- `style.css`
+- `game.js`
+- `README.md`
 
-## GitHub Pages'e yükleme
+GitHub Pages birkaç dakika içinde yeni sürümü yayınlar.
 
-1. GitHub'da yeni bir depo oluştur.
-2. `index.html`, `style.css`, `game.js` ve `README.md` dosyalarını depoya yükle.
-3. Deponun `Settings` bölümüne gir.
-4. Sol menüden `Pages` seç.
-5. `Deploy from a branch` seçeneğini kullan.
-6. Branch olarak `main`, klasör olarak `/root` seç ve kaydet.
-7. GitHub birkaç dakika içinde oyun bağlantısını oluşturur.
+## Test
 
-## Oynanış
-
-- Boş araziye tıklayarak 5 ₺ karşılığında fidan dik.
-- Fidan yaklaşık 20 saniyede ağaca dönüşür.
-- Hazır ağaca tıklayarak kütük kazan.
-- Fabrikada kütüğü keresteye çevir.
-- Keresteyi satarak para kazan.
-- Para ile işçi al, lojmanı ve fabrikayı yükselt.
-
-Bu sürüm çekirdek döngüyü test etmek içindir.
+ZIP dosyasını açıp `index.html` dosyasına çift tıklayarak bilgisayarında doğrudan oynayabilirsin.
