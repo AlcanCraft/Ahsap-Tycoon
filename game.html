@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b2018" />
+  <title>Ahşap Tycoon - Oyun</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <path d="M32 5 8 20v28l24 11 24-11V20Z" fill="#d5a84f"/>
+            <path d="M32 11 14 22v22l18 8 18-8V22Z" fill="#173c2c"/>
+            <path d="M23 41h18M26 34h12M29 27h6" stroke="#f4e6b8" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <span class="kicker">ALCANCRAFT</span>
+          <h1>Ahşap Tycoon</h1>
+        </div>
+      </div>
+
+      <div class="resource-bar">
+        <div class="resource">
+          <span class="resource-icon coin-icon"></span>
+          <div><small>Para</small><strong id="moneyValue">0 ₺</strong></div>
+        </div>
+        <div class="resource">
+          <span class="resource-icon log-icon"></span>
+          <div><small>Kütük</small><strong id="logValue">0 / 100</strong></div>
+        </div>
+        <div class="resource">
+          <span class="resource-icon plank-icon"></span>
+          <div><small>Kereste</small><strong id="lumberValue">0 / 100</strong></div>
+        </div>
+        <div class="resource">
+          <span class="resource-icon worker-icon"></span>
+          <div><small>İşçi</small><strong id="workerValue">0 / 0</strong></div>
+        </div>
+      </div>
+
+      <div class="account-actions">
+        <span id="currentPlayerName" class="current-player-name">Oyuncu</span>
+        <a href="index.html" class="account-link">Hesabım</a>
+        <button id="logoutGameBtn" class="reset-button" type="button">Çıkış</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="map-card">
+        <div class="section-title">
+          <div>
+            <span class="kicker">ÜRETİM HARİTASI</span>
+            <h2>Orman İşletmesi</h2>
+          </div>
+          <div class="mode-wrap">
+            <span id="forestModeBadge" class="status-pill">Manuel</span>
+            <span id="forestWorkerInfo" class="muted">0 işçi arazide</span>
+          </div>
+        </div>
+
+        <div class="game-map">
+          <svg class="terrain" viewBox="0 0 1200 760" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="grass" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#5f9359"/>
+                <stop offset="1" stop-color="#2f6744"/>
+              </linearGradient>
+              <linearGradient id="road" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#6e685b"/>
+                <stop offset="1" stop-color="#474237"/>
+              </linearGradient>
+              <linearGradient id="water" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#58a8b8"/>
+                <stop offset=".5" stop-color="#82c7cf"/>
+                <stop offset="1" stop-color="#4c97aa"/>
+              </linearGradient>
+              <pattern id="roadLines" width="100" height="20" patternUnits="userSpaceOnUse">
+                <rect width="52" height="6" y="7" fill="#e6d59a" opacity=".85"/>
+              </pattern>
+            </defs>
+            <rect width="1200" height="760" fill="url(#grass)"/>
+            <path d="M0 260 C210 185 330 350 520 280 S870 190 1200 300 L1200 390 C910 305 760 430 520 365 S210 350 0 430Z" fill="url(#water)" opacity=".95"/>
+            <path d="M0 665 H1200 V760 H0Z" fill="url(#road)"/>
+            <rect x="0" y="700" width="1200" height="20" fill="url(#roadLines)"/>
+            <g opacity=".25" fill="#dff1dd">
+              <circle cx="80" cy="80" r="30"/><circle cx="112" cy="95" r="22"/><circle cx="1040" cy="85" r="38"/>
+              <circle cx="1090" cy="110" r="26"/><circle cx="920" cy="520" r="18"/><circle cx="960" cy="545" r="24"/>
+            </g>
+          </svg>
+
+          <div class="forest-zone-label">ORMAN İŞÇİ BÖLGESİ</div>
+          <div id="fieldGrid" class="field-grid" aria-label="Fidanlık alanı"></div>
+
+          <div class="building lodging-building">
+            <svg viewBox="0 0 220 160" aria-hidden="true">
+              <rect x="22" y="64" width="176" height="72" rx="8" fill="#d6c7a7"/>
+              <path d="M10 72 110 18l100 54Z" fill="#8e4938"/>
+              <rect x="42" y="82" width="38" height="32" rx="4" fill="#6aa6b1"/>
+              <rect x="140" y="82" width="38" height="32" rx="4" fill="#6aa6b1"/>
+              <rect x="94" y="88" width="32" height="48" rx="3" fill="#6b4a36"/>
+              <rect x="156" y="34" width="16" height="34" fill="#745444"/>
+            </svg>
+            <div class="building-caption">
+              <strong>İşçi Lojmanı</strong>
+              <span id="lodgingMapLevel">Seviye 1</span>
+            </div>
+          </div>
+
+          <div class="building warehouse-building">
+            <svg viewBox="0 0 240 170" aria-hidden="true">
+              <rect x="25" y="55" width="190" height="95" rx="8" fill="#c89f63"/>
+              <path d="M15 60 120 12l105 48Z" fill="#5e4330"/>
+              <rect x="52" y="82" width="136" height="68" rx="4" fill="#7b5639"/>
+              <path d="M64 95h112M64 110h112M64 125h112" stroke="#b98c58" stroke-width="7"/>
+              <g fill="#7c4f28">
+                <circle cx="44" cy="144" r="12"/><circle cx="62" cy="144" r="12"/><circle cx="80" cy="144" r="12"/>
+              </g>
+            </svg>
+            <div class="building-caption">
+              <strong>Depolar</strong>
+              <span id="warehouseMapInfo">Kütük 0 • Kereste 0</span>
+            </div>
+          </div>
+
+          <div class="building factory-building">
+            <svg viewBox="0 0 280 190" aria-hidden="true">
+              <rect x="32" y="70" width="216" height="92" rx="8" fill="#77848b"/>
+              <path d="M32 80 82 45v35l55-35v35l55-35v35h56v82H32Z" fill="#9da8ad"/>
+              <rect x="198" y="18" width="28" height="62" rx="4" fill="#5e6267"/>
+              <rect x="62" y="108" width="62" height="54" fill="#4d5960"/>
+              <rect x="150" y="98" width="62" height="36" fill="#6ea5af"/>
+              <g fill="#444c50">
+                <rect x="43" y="91" width="20" height="10"/><rect x="72" y="91" width="20" height="10"/>
+              </g>
+            </svg>
+            <div id="smoke1" class="smoke smoke-1"></div>
+            <div id="smoke2" class="smoke smoke-2"></div>
+            <div id="smoke3" class="smoke smoke-3"></div>
+            <div class="building-caption">
+              <strong>Kereste Fabrikası</strong>
+              <span id="factoryMapLevel">Seviye 1</span>
+            </div>
+          </div>
+
+          <div class="worker-route">
+            <div id="workerA" class="worker-sprite worker-a"><span class="head"></span><span class="body"></span><span class="legs"></span></div>
+            <div id="workerB" class="worker-sprite worker-b"><span class="head"></span><span class="body"></span><span class="legs"></span></div>
+          </div>
+
+          <div class="log-conveyor">
+            <div class="conveyor-belt"></div>
+            <div id="movingLogA" class="moving-log log-a"></div>
+            <div id="movingLogB" class="moving-log log-b"></div>
+          </div>
+
+          <div class="forklift-route-label">FORKLİFT TAŞIMA HATTI</div>
+          <div id="forkliftScene" class="forklift-scene">
+            <div id="forklift" class="forklift">
+              <div class="forklift-cab"></div>
+              <div class="forklift-mast"></div>
+              <div class="forklift-forks"></div>
+              <div class="forklift-load"></div>
+              <span class="fork-wheel fw1"></span>
+              <span class="fork-wheel fw2"></span>
+            </div>
+          </div>
+
+          <div class="truck-scene">
+            <div id="movingTruck" class="truck-body">
+              <span class="truck-cab"></span>
+              <span class="truck-box"></span>
+              <span class="wheel w1"></span>
+              <span class="wheel w2"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="forest-controls">
+          <button id="manualForestBtn" class="control-button manual" type="button">
+            <span class="button-art axe-art"></span>
+            <span><strong>Elle Kütük Üret</strong><small>Hazır ağacı kes veya fidan dik</small></span>
+          </button>
+          <button id="autoForestBtn" class="control-button auto" type="button">
+            <span class="button-art gear-art"></span>
+            <span><strong>Otomatik Üretimi Aç</strong><small>İşçiler otomatik dikim ve kesim yapar</small></span>
+          </button>
+        </div>
+
+        <div id="forestStatus" class="message-box">
+          Manuel mod açık. Araziye tıklayabilir veya üretim düğmesini kullanabilirsin.
+        </div>
+      </section>
+
+      <aside class="side-panel">
+        <section class="management-card">
+          <div class="card-heading">
+            <div><span class="kicker">ÜRETİM</span><h3>Kereste Fabrikası</h3></div>
+            <span id="factoryLevel" class="status-pill">Sv. 1</span>
+          </div>
+
+          <div class="machine-visual">
+            <div class="machine-log"></div>
+            <div id="sawWheel" class="saw-wheel"></div>
+            <div class="machine-planks"><i></i><i></i><i></i></div>
+          </div>
+
+          <div class="mini-stats">
+            <div><small>İşleme</small><strong id="processTime">10 sn</strong></div>
+            <div><small>Gerekli işçi</small><strong id="factoryWorkers">2</strong></div>
+          </div>
+
+          <div class="progress-track"><div id="factoryProgress" class="progress-fill"></div></div>
+          <p id="factoryStatus" class="muted status-line">Fabrika bekliyor.</p>
+
+          <div class="factory-queue-box">
+            <span>Üretim sırası</span>
+            <strong id="factoryQueueValue">0 kütük</strong>
+          </div>
+
+          <div class="button-grid factory-buttons">
+            <button id="processBtn" class="solid-button gold" type="button">1 kütüğü sıraya al</button>
+            <button id="autoFactoryBtn" class="solid-button blue" type="button">Otomatik üretimi aç</button>
+            <button id="upgradeFactoryBtn" class="solid-button green full-row" type="button">Fabrikayı yükselt</button>
+          </div>
+        </section>
+
+        <section class="management-card">
+          <div class="card-heading">
+            <div><span class="kicker">ÇALIŞANLAR</span><h3>İşçi Lojmanı</h3></div>
+            <span id="lodgingLevel" class="status-pill">Sv. 1</span>
+          </div>
+
+          <div class="worker-stats">
+            <div><span class="worker-dot field-dot"></span><small>Arazi</small><strong id="fieldWorkersValue">0</strong></div>
+            <div><span class="worker-dot factory-dot"></span><small>Fabrika</small><strong id="factoryWorkersValue">0</strong></div>
+            <div><span class="worker-dot idle-dot"></span><small>Boşta</small><strong id="idleWorkersValue">0</strong></div>
+          </div>
+
+          <div class="mini-stats">
+            <div><small>Kapasite</small><strong id="lodgingCapacity">10</strong></div>
+            <div><small>Boş yer</small><strong id="lodgingFree">10</strong></div>
+          </div>
+
+          <div class="button-grid">
+            <button id="hireBtn" class="solid-button gold" type="button">İşçi al</button>
+            <button id="upgradeLodgingBtn" class="solid-button green" type="button">Lojmanı yükselt</button>
+          </div>
+        </section>
+
+        
+        <section class="management-card forklift-management-card">
+          <div class="card-heading">
+            <div><span class="kicker">LOJİSTİK</span><h3>Forklift Filosu</h3></div>
+            <span id="forkliftCountBadge" class="status-pill">1 / 5</span>
+          </div>
+
+          <div id="forkliftFleetVisual" class="forklift-fleet-visual">
+            <div class="mini-forklift"></div>
+            <div class="mini-forklift"></div>
+            <div class="mini-forklift"></div>
+            <div class="mini-forklift"></div>
+            <div class="mini-forklift"></div>
+          </div>
+
+          <div class="mini-stats">
+            <div><small>Forklift sayısı</small><strong id="forkliftCountValue">1</strong></div>
+            <div><small>Taşıma kapasitesi</small><strong id="forkliftCapacityValue">1 kütük</strong></div>
+          </div>
+
+          <div class="mini-stats">
+            <div><small>Bekleyen taşıma</small><strong id="forkliftQueueValue">0</strong></div>
+            <div><small>Aynı anda çalışan</small><strong id="activeForkliftValue">0</strong></div>
+          </div>
+
+          <button id="buyForkliftBtn" class="solid-button blue wide" type="button">
+            Forklift satın al
+          </button>
+        </section>
+
+        <section class="management-card land-management-card">
+          <div class="card-heading">
+            <div><span class="kicker">ARAZİ PAZARI</span><h3>Orman Arazisi</h3></div>
+            <span id="landCountBadge" class="status-pill">16 Parsel</span>
+          </div>
+
+          <div class="land-map-preview">
+            <div class="land-tile owned"></div>
+            <div class="land-tile owned"></div>
+            <div class="land-tile owned"></div>
+            <div class="land-tile new-land"></div>
+          </div>
+
+          <div class="mini-stats">
+            <div><small>Aktif parsel</small><strong id="landCountValue">16</strong></div>
+            <div><small>Harita ölçeği</small><strong id="mapScaleValue">%100</strong></div>
+          </div>
+
+          <div class="button-grid">
+            <button id="buyLandBtn" class="solid-button gold" type="button">Arazi satın al</button>
+            <button id="sellLandBtn" class="solid-button green" type="button">Arazi sat</button>
+          </div>
+          <p id="landStatus" class="muted status-line">Yeni arazi 4 tarla parseli açar.</p>
+        </section>
+
+        <section class="management-card logistics-center-card">
+          <div class="card-heading">
+            <div><span class="kicker">SATIŞ YÖNETİMİ</span><h3>Lojistik Merkezi</h3></div>
+            <span id="salesStatusBadge" class="status-pill">Satış Açık</span>
+          </div>
+
+          <div class="logistics-visual">
+            <div class="logistics-warehouse-icon"></div>
+            <div class="logistics-arrows">⇄</div>
+            <div class="logistics-truck-icon"></div>
+          </div>
+
+          <div class="mini-stats">
+            <div><small>Kütük satış fiyatı</small><strong>15 ₺</strong></div>
+            <div><small>Kereste satış fiyatı</small><strong>32 ₺</strong></div>
+          </div>
+
+          <div class="logistics-buttons">
+            <button id="pauseSalesBtn" class="solid-button red" type="button">Satışı durdur</button>
+            <button id="sellAllBtn" class="solid-button gold" type="button">Hepsini sat</button>
+            <button id="autoSalesBtn" class="solid-button blue full-row" type="button">Otomatik satışı aç</button>
+          </div>
+
+          <p id="logisticsStatus" class="muted status-line">
+            Firma talepleri stok oluştuğunda otomatik karşılanır.
+          </p>
+        </section>
+
+        <section class="management-card demand-card">
+          <div class="card-heading">
+            <div><span class="kicker">FİRMA TALEPLERİ</span><h3>Kütük ve Kereste</h3></div>
+            <span class="status-pill gold-pill">Canlı Pazar</span>
+          </div>
+
+          <p class="demand-help">
+            Firmalar kütük veya kereste talep eder. Ürün stokta yoksa süre bitene kadar bekler.
+          </p>
+
+          <div id="companyOrders" class="company-orders"></div>
+        </section>
+      </aside>
+
+      <section class="event-card">
+        <div class="card-heading">
+          <div><span class="kicker">CANLI AKIŞ</span><h3>İşletme Günlüğü</h3></div>
+          <span id="gameLevelBadge" class="status-pill gold-pill">İşletme Seviyesi 1</span>
+        </div>
+        <div id="eventLog" class="event-log" aria-live="polite"></div>
+      </section>
+    </main>
+  </div>
+
+
+  <div id="updateModal" class="update-modal" aria-hidden="true">
+    <div class="update-backdrop"></div>
+
+    <section class="update-dialog" role="dialog" aria-modal="true" aria-labelledby="updateTitle">
+      <div class="update-header">
+        <div>
+          <span class="kicker">SÜRÜM 1.4</span>
+          <h2 id="updateTitle">Bilgi Ekranı</h2>
+          <p>Oyuna eklenen son yenilikler</p>
+        </div>
+        <div class="update-badge">YENİ</div>
+      </div>
+
+      <div class="update-list">
+        <article class="update-item forest-update">
+          <div class="update-icon forest-update-icon" aria-hidden="true"></div>
+          <div>
+            <strong>Orman işçileri sınırlandırıldı</strong>
+            <p>İşçiler artık yalnızca orman arazisi içinde hareket ederek fidan dikiyor ve olgun ağaçları kesiyor.</p>
+          </div>
+        </article>
+
+        <article class="update-item seed-update">
+          <div class="update-icon seed-update-icon" aria-hidden="true"></div>
+          <div>
+            <strong>Fidan üretim döngüsü geliştirildi</strong>
+            <p>Fidan, büyüyen ağaç, kesime hazır ağaç ve kesilmiş kütük aşamaları arazi üzerinde görüntüleniyor.</p>
+          </div>
+        </article>
+
+        <article class="update-item forklift-update">
+          <div class="update-icon forklift-update-icon" aria-hidden="true"></div>
+          <div>
+            <strong>Forklift sistemi eklendi</strong>
+            <p>Kesilen kütükler artık forklift tarafından araziden alınıp fabrikaya taşınıyor.</p>
+          </div>
+        </article>
+
+        <article class="update-item factory-update">
+          <div class="update-icon factory-update-icon" aria-hidden="true"></div>
+          <div>
+            <strong>Fabrika teslimat akışı yenilendi</strong>
+            <p>Kütük stoğu, forklift fabrikaya ulaştıktan sonra artıyor ve üretim süreci daha görünür hale geliyor.</p>
+          </div>
+        </article>
+
+        <article class="update-item interface-update">
+          <div class="update-icon interface-update-icon" aria-hidden="true"></div>
+          <div>
+            <strong>Yönetim arayüzü iyileştirildi</strong>
+            <p>Orman işçi bölgesi ile forklift taşıma hattı haritada ayrı alanlar olarak gösteriliyor.</p>
+          </div>
+        </article>
+
+        <article class="update-item factory-update">
+          <div class="update-icon factory-update-icon" aria-hidden="true"></div>
+          <div>
+            <strong>Otomatik fabrika üretimi eklendi</strong>
+            <p>Kütükler üretim sırasına alınabilir ve fabrika bunları otomatik olarak tek tek işler.</p>
+          </div>
+        </article>
+
+        <article class="update-item forklift-update">
+          <div class="update-icon forklift-update-icon" aria-hidden="true"></div>
+          <div>
+            <strong>Otomatik forklift ve çift ürün satışı düzeltildi</strong>
+            <p>Tarlalar açılışta görünür, forklift kesilen kütükleri otomatik toplar; firmalar hem kütük hem kereste satın alır.</p>
+          </div>
+        </article>
+      
+        <article class="update-item forklift-update">
+          <div class="update-icon forklift-update-icon" aria-hidden="true"></div>
+          <div>
+            <strong>Forklift filosu, arazi pazarı ve lojistik merkezi</strong>
+            <p>En fazla 5 forklift satın alınabilir, taşıma kapasitesi artar; yeni araziler alınabilir ve satışlar Lojistik Merkezi üzerinden yönetilir.</p>
+          </div>
+        </article>
+
+      </div>
+
+      <div class="update-footer">
+        <span>Bu ekran aynı sürüm için yalnızca bir kez gösterilir.</span>
+        <button id="closeUpdateModal" class="update-close-button" type="button">Okudum</button>
+      </div>
+    </section>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="cloud-sync.js"></script>
+</body>
+</html>

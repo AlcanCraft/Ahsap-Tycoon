@@ -1,4 +1,4 @@
-# Ahşap Tycoon v1.3
+# Ahşap Tycoon v1.4
 
 Bu sürümde metin/emoji ağırlıklı görünüm kaldırıldı ve gerçek oyun sahnesi yaklaşımına geçildi.
 
@@ -157,3 +157,20 @@ Kesimden sonra kütükler yaklaşık 3 saniye arazide görünür. Sonra otomatik
 - “Hepsini sat” ile depodaki tüm kütük ve kereste anında satılabilir.
 - Firma talepleri için otomatik satış açılıp kapatılabilir.
 - Kütük ve kereste satışları ayrı fiyatlarla devam eder.
+
+
+## v1.4 kullanıcı, bulut kayıt ve yönetici sistemi
+
+- E-posta ve parola ile kayıt olma
+- E-posta ve parola ile giriş yapma
+- Kullanıcı adı belirleme
+- Her oyuncu için ayrı bulut oyun kaydı
+- Farklı cihazdan kaldığı yerden devam etme
+- Hesap ekranı
+- Güvenli çıkış
+- Yönetici paneli
+- Oyuncu listesi ve oyun ilerleme özetleri
+- Supabase Row Level Security politikaları
+- Yönetici yetkisinin veritabanından verilmesi
+
+Kurulum için `KURULUM.md` dosyasını okuyun.
