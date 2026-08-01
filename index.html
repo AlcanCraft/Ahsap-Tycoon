@@ -4,9 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0b2018" />
-  <title>Ahşap Tycoon - Giriş</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="auth.css" />
+  <title>Ahşap Tycoon v2.0</title>
+  <link rel="stylesheet" href="css/game.css" />
+  <link rel="stylesheet" href="css/account.css" />
 </head>
 <body class="auth-body">
   <main class="auth-layout">
@@ -19,19 +19,25 @@
             <path d="M23 41h18M26 34h12M29 27h6" stroke="#f4e6b8" stroke-width="4" stroke-linecap="round"/>
           </svg>
         </div>
-        <div><span class="kicker">ALCANCRAFT</span><h1>Ahşap Tycoon</h1></div>
+        <div>
+          <span class="kicker">ALCANCRAFT</span>
+          <h1>Ahşap Tycoon v2.0</h1>
+        </div>
       </div>
 
       <div class="hero-copy">
-        <span class="auth-badge">Firebase ücretsiz kayıt sistemi</span>
-        <h2>İşletmeni kaydet ve kaldığın yerden devam et.</h2>
-        <p>Oyuncular kullanıcı adı, e-posta ve parola ile hesap açar. Oyun ilerlemeleri Firebase üzerinde saklanır.</p>
+        <span class="auth-badge">Bulut kayıtlı Tycoon deneyimi</span>
+        <h2>Orman işletmeni kur, otomatikleştir ve büyüt.</h2>
+        <p>
+          Hesabınla giriş yap; haritan, fabrikaların, forklift filon, arazilerin ve
+          ekonomik ilerlemen Firebase üzerinde hesabına kaydedilsin.
+        </p>
       </div>
 
       <div class="hero-features">
-        <article><span>01</span><strong>Kişisel oyun kaydı</strong></article>
-        <article><span>02</span><strong>E-posta ile giriş</strong></article>
-        <article><span>03</span><strong>Yönetici paneli</strong></article>
+        <article><span>01</span><strong>Bulut oyun kaydı</strong></article>
+        <article><span>02</span><strong>Kullanıcı hesapları</strong></article>
+        <article><span>03</span><strong>Liderlik tablosu</strong></article>
       </div>
     </section>
 
@@ -43,22 +49,50 @@
         </div>
 
         <form id="loginForm" class="auth-form">
-          <div class="form-heading"><span class="kicker">OYUNCU GİRİŞİ</span><h2>Tekrar hoş geldin</h2></div>
-          <label><span>E-posta</span><input id="loginEmail" type="email" required /></label>
-          <label><span>Parola</span><input id="loginPassword" type="password" minlength="6" required /></label>
+          <div class="form-heading">
+            <span class="kicker">OYUNCU GİRİŞİ</span>
+            <h2>Tekrar hoş geldin</h2>
+          </div>
+
+          <label>
+            <span>E-posta adresi</span>
+            <input id="loginEmail" type="email" autocomplete="email" required />
+          </label>
+
+          <label>
+            <span>Parola</span>
+            <input id="loginPassword" type="password" autocomplete="current-password" minlength="6" required />
+          </label>
+
           <button class="auth-primary-button" type="submit">Giriş yap</button>
+          <button id="forgotPasswordBtn" class="text-action-button" type="button">Parolamı unuttum</button>
         </form>
 
         <form id="registerForm" class="auth-form hidden">
-          <div class="form-heading"><span class="kicker">YENİ OYUNCU</span><h2>Hesabını oluştur</h2></div>
-          <label><span>Kullanıcı adı</span><input id="registerUsername" type="text" minlength="3" maxlength="24" required /></label>
-          <label><span>E-posta</span><input id="registerEmail" type="email" required /></label>
-          <label><span>Parola</span><input id="registerPassword" type="password" minlength="6" required /></label>
+          <div class="form-heading">
+            <span class="kicker">YENİ OYUNCU</span>
+            <h2>İşletme hesabını oluştur</h2>
+          </div>
+
+          <label>
+            <span>Kullanıcı adı</span>
+            <input id="registerUsername" type="text" minlength="3" maxlength="24" required />
+          </label>
+
+          <label>
+            <span>E-posta adresi</span>
+            <input id="registerEmail" type="email" autocomplete="email" required />
+          </label>
+
+          <label>
+            <span>Parola</span>
+            <input id="registerPassword" type="password" autocomplete="new-password" minlength="6" required />
+          </label>
+
           <button class="auth-primary-button" type="submit">Kayıt ol</button>
         </form>
 
-        <div id="authMessage" class="auth-message"></div>
-        <a id="setupWizardLink" class="setup-wizard-link" href="setup.html">Firebase Kurulum Sihirbazı</a>
+        <div id="authMessage" class="auth-message" aria-live="polite"></div>
       </div>
 
       <div id="accountPanel" class="account-panel hidden">
@@ -66,18 +100,22 @@
         <span class="kicker">OYUNCU HESABI</span>
         <h2 id="accountUsername">Oyuncu</h2>
         <p id="accountEmail"></p>
+
         <div class="account-stats">
-          <div><span>Kayıt durumu</span><strong id="saveStatus">Hazır</strong></div>
+          <div><span>Kayıt durumu</span><strong id="saveStatus">Yeni oyun</strong></div>
           <div><span>Son kayıt</span><strong id="lastSaveAt">Henüz yok</strong></div>
         </div>
+
         <div class="account-buttons">
           <a class="auth-primary-button link-button" href="game.html">Oyuna gir</a>
+          <a class="auth-secondary-button link-button" href="leaderboard.html">Liderlik tablosu</a>
           <a id="adminPanelLink" class="auth-secondary-button link-button hidden" href="admin.html">Yönetici paneli</a>
           <button id="logoutBtn" class="auth-secondary-button" type="button">Çıkış yap</button>
         </div>
       </div>
     </section>
   </main>
-  <script type="module" src="firebase-auth.js"></script>
+
+  <script type="module" src="js/account.js"></script>
 </body>
 </html>
