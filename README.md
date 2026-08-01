@@ -1,4 +1,4 @@
-# Ahşap Tycoon v0.7
+# Ahşap Tycoon v0.8
 
 Bu sürümde metin/emoji ağırlıklı görünüm kaldırıldı ve gerçek oyun sahnesi yaklaşımına geçildi.
 
@@ -72,3 +72,14 @@ Kesimden sonra kütükler yaklaşık 3 saniye arazide görünür. Sonra otomatik
 - Forklift kesilen kütüğü alır ve fabrikaya götürür.
 - Kütük sayısı, forklift fabrikaya ulaştığında artar.
 - Otomatik üretimde bu döngü sürekli tekrar eder.
+
+
+## v0.8 görev ayrımı
+
+- İşçiler yalnızca orman arazisi sınırları içinde hareket eder.
+- İşçiler fabrikaya veya depoya gitmez.
+- İşçilerin görevleri sadece fidan dikmek ve olgun ağacı kesmektir.
+- Kesilen kütükler arazide forklift bekler.
+- Forklift fabrikadan çıkar, ilgili araziye gider ve kütüğü yükler.
+- Forklift kütüğü fabrikaya götürdüğünde kütük stoğu artar.
+- Haritada orman işçi bölgesi ve forklift taşıma hattı görsel olarak ayrılmıştır.

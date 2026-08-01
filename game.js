@@ -616,8 +616,8 @@ const queuedTaskKeys = new Set();
 const forkliftQueuedPlots = new Set();
 
 const workerAgents = [
-  { el: els.workerA, busy: false, homeX: 8, homeY: 62 },
-  { el: els.workerB, busy: false, homeX: 12, homeY: 64 }
+  { el: els.workerA, busy: false, homeX: 8, homeY: 88 },
+  { el: els.workerB, busy: false, homeX: 16, homeY: 88 }
 ];
 
 let forkliftBusy = false;
@@ -646,14 +646,24 @@ function queueForkliftTask(plotId) {
   return true;
 }
 
-function getPlotPosition(plotId) {
+function getPlotPosition(plotId, coordinateSpace = "map") {
   const plotEl = document.querySelector(`.plot[data-plot-id="${plotId}"]`);
   const map = els.gameMap;
+  const workerZone = document.querySelector(".worker-route");
+
   if (!plotEl || !map) return { x: 30, y: 30 };
 
   const plotRect = plotEl.getBoundingClientRect();
-  const mapRect = map.getBoundingClientRect();
 
+  if (coordinateSpace === "worker" && workerZone) {
+    const zoneRect = workerZone.getBoundingClientRect();
+    return {
+      x: ((plotRect.left + plotRect.width / 2 - zoneRect.left) / zoneRect.width) * 100,
+      y: ((plotRect.top + plotRect.height / 2 - zoneRect.top) / zoneRect.height) * 100
+    };
+  }
+
+  const mapRect = map.getBoundingClientRect();
   return {
     x: ((plotRect.left + plotRect.width / 2 - mapRect.left) / mapRect.width) * 100,
     y: ((plotRect.top + plotRect.height / 2 - mapRect.top) / mapRect.height) * 100
@@ -696,11 +706,11 @@ async function executeWorkerTask(agent, task) {
   agent.busy = true;
   agent.el?.classList.add("active-worker");
 
-  const label = task.type === "plant" ? "Fidan dikiliyor" : "Ağaç kesiliyor";
+  const label = task.type === "plant" ? "İşçi fidan dikiyor" : "İşçi ağacı kesiyor";
   plotActionState.set(task.plotId, label);
   renderPlots();
 
-  const target = getPlotPosition(task.plotId);
+  const target = getPlotPosition(task.plotId, "worker");
   const start = {
     x: parseFloat(agent.el?.style.left) || agent.homeX,
     y: parseFloat(agent.el?.style.top) || agent.homeY
@@ -725,7 +735,7 @@ async function executeWorkerTask(agent, task) {
     plot.state = "harvested";
     plot.plantedAt = null;
     plot.harvestedAt = Date.now();
-    addLog(`${task.plotId + 1}. arazideki ağaç kesildi. Forklift çağrıldı.`);
+    addLog(`${task.plotId + 1}. arazideki ağaç işçi tarafından kesildi. Forklift çağrıldı.`);
     queueForkliftTask(task.plotId);
   }
 
@@ -768,16 +778,16 @@ async function dispatchForklift() {
   els.forklift.classList.remove("carrying");
 
   const factoryPos = { x: 78, y: 49 };
-  const target = getPlotPosition(task.plotId);
+  const target = getPlotPosition(task.plotId, "map");
 
-  plotActionState.set(task.plotId, "Forklift geliyor");
+  plotActionState.set(task.plotId, "Forklift kütüğü almaya geliyor");
   renderPlots();
 
   await moveAbsolute(els.forklift, factoryPos, target, 1500);
   await wait(650);
 
   els.forklift.classList.add("carrying");
-  plotActionState.set(task.plotId, "Kütükler yükleniyor");
+  plotActionState.set(task.plotId, "Forklift kütüğü yüklüyor");
   renderPlots();
   await wait(700);
 
@@ -791,7 +801,7 @@ async function dispatchForklift() {
 
   if (state.logs < CONFIG.logStorage) {
     state.logs += 1;
-    addLog("Forklift 1 kütüğü fabrikaya teslim etti.");
+    addLog("Forklift 1 kütüğü araziden alıp fabrikaya teslim etti.");
   } else {
     addLog("Kütük deposu dolu olduğu için teslimat bekletildi.");
   }
@@ -935,7 +945,7 @@ motionDebug.textContent = "Canlı animasyon sistemi aktif";
 document.querySelector(".game-map")?.appendChild(motionDebug);
 
 if (!state.logsHistory.length) {
-  addLog("Ahşap Tycoon v0.7 başladı. İlk fidanını dik.");
+  addLog("Ahşap Tycoon v0.8 başladı. İlk fidanını dik.");
 }
 
 render();
