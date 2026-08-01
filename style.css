@@ -45,3 +45,188 @@ button{font:inherit}.topbar{min-height:88px;padding:14px 20px;display:grid;grid-
   color: #cbe8d2;
   pointer-events: none;
 }
+
+
+.plot.harvested {
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.05), transparent 45%),
+    #6f5834;
+  box-shadow: 0 0 0 2px rgba(213,168,79,.2), 0 12px 24px rgba(0,0,0,.2);
+}
+
+.plot.harvested .tree-svg {
+  animation: logPulse 1.1s ease-in-out infinite;
+}
+
+@keyframes logPulse {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-3px) scale(1.03); }
+}
+
+
+/* v0.7 - Görev odaklı işçi ve forklift animasyonları */
+
+.plot {
+  overflow: visible;
+}
+
+.plot-action {
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  translate: -50% 0;
+  z-index: 6;
+  min-width: 78%;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: rgba(5, 20, 13, .88);
+  border: 1px solid rgba(255,255,255,.16);
+  color: #f6e8b7;
+  font-size: .52rem;
+  font-weight: 900;
+  text-align: center;
+  pointer-events: none;
+  animation: actionPulse .8s ease-in-out infinite;
+}
+
+.plot.working {
+  box-shadow:
+    0 0 0 3px rgba(244, 206, 111, .36),
+    0 0 28px rgba(244, 206, 111, .28),
+    0 12px 24px rgba(0,0,0,.2);
+}
+
+.plot.working::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 16px;
+  border: 2px dashed rgba(255, 226, 146, .78);
+  animation: workRing 1.15s linear infinite;
+  pointer-events: none;
+}
+
+.worker-sprite {
+  z-index: 30 !important;
+  filter: drop-shadow(0 5px 5px rgba(0,0,0,.36));
+}
+
+.worker-sprite.active-worker .body {
+  background: #f2bd42;
+  box-shadow: 0 0 14px rgba(242,189,66,.42);
+}
+
+.forklift-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 26;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.forklift {
+  position: absolute;
+  left: 78%;
+  top: 51%;
+  width: 62px;
+  height: 42px;
+  transform-origin: center;
+  filter: drop-shadow(0 7px 6px rgba(0,0,0,.35));
+  will-change: left, top, transform;
+  opacity: 0;
+}
+
+.forklift-cab {
+  position: absolute;
+  left: 18px;
+  top: 7px;
+  width: 30px;
+  height: 25px;
+  border-radius: 5px 7px 3px 3px;
+  background: #e0ad37;
+  border: 3px solid #ae7920;
+}
+
+.forklift-cab::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 3px;
+  width: 14px;
+  height: 9px;
+  border-radius: 2px;
+  background: #7bb0b7;
+}
+
+.forklift-mast {
+  position: absolute;
+  left: 7px;
+  top: 2px;
+  width: 6px;
+  height: 31px;
+  background: #383e3b;
+}
+
+.forklift-forks {
+  position: absolute;
+  left: -5px;
+  top: 29px;
+  width: 28px;
+  height: 4px;
+  background: #373c39;
+  box-shadow: 0 7px 0 #373c39;
+}
+
+.forklift-load {
+  position: absolute;
+  left: -3px;
+  top: 12px;
+  width: 25px;
+  height: 18px;
+  opacity: 0;
+}
+
+.forklift-load::before,
+.forklift-load::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 25px;
+  height: 8px;
+  border-radius: 5px;
+  background: #8f582d;
+  border: 2px solid #b3723b;
+}
+
+.forklift-load::before { top: 0; }
+.forklift-load::after { top: 8px; }
+
+.forklift.carrying .forklift-load {
+  opacity: 1;
+}
+
+.fork-wheel {
+  position: absolute;
+  bottom: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #202421;
+  border: 3px solid #717874;
+}
+
+.fw1 { left: 15px; }
+.fw2 { right: 5px; }
+
+.forklift.active {
+  opacity: 1;
+}
+
+@keyframes actionPulse {
+  0%, 100% { transform: scale(1); opacity: .92; }
+  50% { transform: scale(1.04); opacity: 1; }
+}
+
+@keyframes workRing {
+  to { rotate: 360deg; }
+}

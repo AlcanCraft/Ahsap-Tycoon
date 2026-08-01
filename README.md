@@ -1,4 +1,4 @@
-# Ahşap Tycoon v0.5
+# Ahşap Tycoon v0.7
 
 Bu sürümde metin/emoji ağırlıklı görünüm kaldırıldı ve gerçek oyun sahnesi yaklaşımına geçildi.
 
@@ -47,3 +47,28 @@ Bu sürümde hareketler `requestAnimationFrame` kullanan JavaScript sistemiyle �
 - Makine içindeki kütük ilerler.
 
 Haritanın sol altında “Canlı animasyon sistemi aktif” yazısı görünür.
+
+
+## v0.6 orman ilerleme görünümü
+
+Orman arazilerindeki üretim aşamaları artık açıkça görünür:
+
+1. Fidan
+2. Büyüyen ağaç
+3. Olgun ve kesime hazır ağaç
+4. Kesilmiş kütükler
+5. Yeniden dikilen fidan
+
+Kesimden sonra kütükler yaklaşık 3 saniye arazide görünür. Sonra otomatik üretim açıksa işçiler yeniden fidan diker.
+
+
+## v0.7 canlı üretim akışı
+
+- İşçiler rastgele dolaşmak yerine görev verilen araziye gider.
+- İşçi araziye vardığında “Fidan dikiliyor” veya “Ağaç kesiliyor” göstergesi çıkar.
+- Fidan dikildikten sonra ağaç zamanla büyür.
+- Ağaç kesime hazır olduğunda işçi tekrar araziye gider.
+- Kesim tamamlandığında forklift fabrikadan çıkar.
+- Forklift kesilen kütüğü alır ve fabrikaya götürür.
+- Kütük sayısı, forklift fabrikaya ulaştığında artar.
+- Otomatik üretimde bu döngü sürekli tekrar eder.

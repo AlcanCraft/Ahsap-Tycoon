@@ -2,6 +2,7 @@ const CONFIG = {
   plotCount: 16,
   seedCost: 5,
   growthSeconds: 18,
+  harvestedDisplaySeconds: 3,
   forestAutomationIntervalMs: 1600,
   lumberSellPrice: 25,
   hireCost: 50,
@@ -41,7 +42,8 @@ const initialState = () => ({
   plots: Array.from({ length: CONFIG.plotCount }, (_, id) => ({
     id,
     state: "empty",
-    plantedAt: null
+    plantedAt: null,
+    harvestedAt: null
   })),
   logsHistory: [],
   lastSalaryAt: Date.now()
@@ -93,7 +95,9 @@ const els = {
   sawWheel: document.querySelector("#sawWheel"),
   smoke1: document.querySelector("#smoke1"),
   smoke2: document.querySelector("#smoke2"),
-  smoke3: document.querySelector("#smoke3")
+  smoke3: document.querySelector("#smoke3"),
+  forklift: document.querySelector("#forklift"),
+  gameMap: document.querySelector(".game-map")
 };
 
 function migrateState() {
@@ -101,6 +105,9 @@ function migrateState() {
   if (!state.lastForestAutomationAt) state.lastForestAutomationAt = 0;
   if (!state.lastSalaryAt) state.lastSalaryAt = Date.now();
   if (!Array.isArray(state.logsHistory)) state.logsHistory = [];
+  for (const plot of state.plots) {
+    if (!("harvestedAt" in plot)) plot.harvestedAt = null;
+  }
 }
 
 function currency(value) {
@@ -124,7 +131,11 @@ function availableFieldWorkers() {
 }
 
 function idleWorkers() {
-  const plotsThatNeedWork = state.plots.filter(p => p.state === "empty" || p.state === "ready").length;
+  const plotsThatNeedWork = state.plots.filter(p =>
+    p.state === "empty" ||
+    p.state === "ready" ||
+    (p.state === "harvested" && (Date.now() - p.harvestedAt) >= CONFIG.harvestedDisplaySeconds * 1000)
+  ).length;
   const fieldUsed = Math.min(availableFieldWorkers(), plotsThatNeedWork);
   return Math.max(0, state.workers - factoryAssignedWorkers() - fieldUsed);
 }
@@ -178,6 +189,12 @@ function plotVisual(plot) {
     return { icon: "🌲", label: "Kesime hazır", className: "ready", ratio: 1 };
   }
 
+  if (plot.state === "harvested") {
+    const elapsedHarvest = (Date.now() - plot.harvestedAt) / 1000;
+    const ratio = Math.min(1, elapsedHarvest / CONFIG.harvestedDisplaySeconds);
+    return { icon: "🪵", label: "Kütükler taşınıyor", className: "harvested", ratio };
+  }
+
   const elapsed = (Date.now() - plot.plantedAt) / 1000;
   const ratio = Math.min(1, elapsed / CONFIG.growthSeconds);
 
@@ -186,13 +203,14 @@ function plotVisual(plot) {
 }
 
 function plantPlot(plot, source = "manuel") {
-  if (!plot || plot.state !== "empty") return false;
+  if (!plot || !["empty", "harvested"].includes(plot.state)) return false;
   if (state.money < CONFIG.seedCost) return false;
   if (availableFieldWorkers() < 1) return false;
 
   state.money -= CONFIG.seedCost;
   plot.state = "growing";
   plot.plantedAt = Date.now();
+  plot.harvestedAt = null;
 
   if (source === "manuel") {
     addLog(`${plot.id + 1}. araziye fidan dikildi.`);
@@ -205,9 +223,9 @@ function harvestPlot(plot, source = "manuel") {
   if (availableFieldWorkers() < 1) return false;
   if (state.logs >= CONFIG.logStorage) return false;
 
-  state.logs += 1;
-  plot.state = "empty";
+  plot.state = "harvested";
   plot.plantedAt = null;
+  plot.harvestedAt = Date.now();
 
   if (source === "manuel") {
     addLog("Ağaç kesildi. 1 kütük depoya taşındı.");
@@ -222,17 +240,25 @@ function clickPlot(id) {
   if (plot.state === "empty") {
     if (state.money < CONFIG.seedCost) return showToast("Fidan için paran yetmiyor.");
     if (availableFieldWorkers() < 1) return showToast("Arazide çalışacak işçi yok.");
-    plantPlot(plot, "manuel");
-    render();
+    queueWorkerTask("plant", id, "manuel");
+    dispatchWorkerTasks();
     return;
   }
 
   if (plot.state === "ready") {
     if (availableFieldWorkers() < 1) return showToast("Kesim için arazide işçi yok.");
     if (state.logs >= CONFIG.logStorage) return showToast("Kütük deposu dolu.");
-    harvestPlot(plot, "manuel");
-    render();
+    queueWorkerTask("harvest", id, "manuel");
+    dispatchWorkerTasks();
     return;
+  }
+
+  if (plot.state === "harvested") {
+    if (!forkliftQueuedPlots.has(id)) {
+      queueForkliftTask(id);
+      dispatchForklift();
+    }
+    return showToast("Forklift kütükleri almaya geliyor.");
   }
 
   showToast("Ağaç henüz büyüyor.");
@@ -241,23 +267,22 @@ function clickPlot(id) {
 function runManualForestCycle() {
   if (availableFieldWorkers() < 1) return showToast("Arazide çalışacak işçi yok.");
 
-  const ready = state.plots.find(p => p.state === "ready");
+  const ready = state.plots.find(p => p.state === "ready" && !plotActionState.has(p.id));
   if (ready) {
-    if (state.logs >= CONFIG.logStorage) return showToast("Kütük deposu dolu.");
-    harvestPlot(ready, "manuel");
-    render();
+    queueWorkerTask("harvest", ready.id, "manuel");
+    dispatchWorkerTasks();
     return;
   }
 
-  const empty = state.plots.find(p => p.state === "empty");
+  const empty = state.plots.find(p => p.state === "empty" && !plotActionState.has(p.id));
   if (empty) {
     if (state.money < CONFIG.seedCost) return showToast("Fidan için paran yetmiyor.");
-    plantPlot(empty, "manuel");
-    render();
+    queueWorkerTask("plant", empty.id, "manuel");
+    dispatchWorkerTasks();
     return;
   }
 
-  showToast("Bütün ağaçlar şu anda büyüyor.");
+  showToast("Şu anda bütün araziler dolu veya işlem görüyor.");
 }
 
 function toggleAutoForest() {
@@ -274,35 +299,34 @@ function runForestAutomation() {
   if (now - state.lastForestAutomationAt < CONFIG.forestAutomationIntervalMs) return;
   state.lastForestAutomationAt = now;
 
-  let actions = availableFieldWorkers();
-  if (actions < 1) return;
-
-  let harvested = 0;
-  let planted = 0;
+  if (availableFieldWorkers() < 1) return;
 
   for (const plot of state.plots.filter(p => p.state === "ready")) {
-    if (actions <= 0 || state.logs >= CONFIG.logStorage) break;
-    if (harvestPlot(plot, "otomatik")) {
-      harvested++;
-      actions--;
+    queueWorkerTask("harvest", plot.id, "otomatik");
+  }
+
+  for (const plot of state.plots.filter(p => p.state === "harvested")) {
+    if (!forkliftQueuedPlots.has(plot.id)) {
+      queueForkliftTask(plot.id);
     }
   }
 
-  for (const plot of state.plots.filter(p => p.state === "empty")) {
-    if (actions <= 0 || state.money < CONFIG.seedCost) break;
-    if (plantPlot(plot, "otomatik")) {
-      planted++;
-      actions--;
-    }
+  const replantable = state.plots.filter(p =>
+    p.state === "empty" ||
+    (
+      p.state === "harvested" &&
+      !forkliftQueuedPlots.has(p.id) &&
+      !plotActionState.has(p.id)
+    )
+  );
+
+  for (const plot of replantable) {
+    if (state.money < CONFIG.seedCost) break;
+    queueWorkerTask("plant", plot.id, "otomatik");
   }
 
-  if (harvested || planted) {
-    const text = [
-      harvested ? `${harvested} ağaç kesildi` : "",
-      planted ? `${planted} fidan dikildi` : ""
-    ].filter(Boolean).join(", ");
-    addLog(`Otomatik ekip: ${text}.`);
-  }
+  dispatchWorkerTasks();
+  dispatchForklift();
 }
 
 function startProcessing() {
@@ -435,6 +459,23 @@ function treeMarkup(plot, visual) {
       </svg>`;
   }
 
+  if (plot.state === "harvested") {
+    return `
+      <svg class="tree-svg log-stage-svg" viewBox="0 0 64 64" aria-hidden="true">
+        <g transform="translate(5 12)">
+          <rect x="5" y="26" width="42" height="12" rx="6" fill="#8a552c"/>
+          <circle cx="47" cy="32" r="6" fill="#c18a4e"/>
+          <circle cx="47" cy="32" r="3.3" fill="none" stroke="#8c5c32" stroke-width="1.4"/>
+          <rect x="12" y="13" width="42" height="12" rx="6" fill="#9c6232"/>
+          <circle cx="54" cy="19" r="6" fill="#d09b5d"/>
+          <circle cx="54" cy="19" r="3.3" fill="none" stroke="#925f34" stroke-width="1.4"/>
+          <rect x="0" y="39" width="42" height="12" rx="6" fill="#774822"/>
+          <circle cx="42" cy="45" r="6" fill="#b87940"/>
+          <circle cx="42" cy="45" r="3.3" fill="none" stroke="#80522c" stroke-width="1.4"/>
+        </g>
+      </svg>`;
+  }
+
   const small = (visual.ratio ?? 0) < .4;
   return small
     ? `
@@ -460,14 +501,17 @@ function renderPlots() {
     const visual = plotVisual(plot);
     const button = document.createElement("button");
     button.type = "button";
-    button.className = `plot ${visual.className}`;
+    button.dataset.plotId = String(plot.id);
+    const activeAction = plotActionState.get(plot.id);
+    button.className = `plot ${visual.className}${activeAction ? " working" : ""}`;
     button.setAttribute("aria-label", `${plot.id + 1}. arazi: ${visual.label}`);
     button.innerHTML = `
       <span class="plot-content">
         ${treeMarkup(plot, visual)}
         <span class="plot-label">${visual.label}</span>
+        ${activeAction ? `<span class="plot-action">${activeAction}</span>` : ""}
       </span>
-      ${plot.state === "growing" ? `
+      ${["growing", "harvested"].includes(plot.state) ? `
         <span class="plot-progress">
           <span style="width:${Math.round((visual.ratio ?? 0) * 100)}%"></span>
         </span>` : ""}
@@ -564,6 +608,204 @@ function updateProcessingUI() {
 }
 
 
+
+const workerTaskQueue = [];
+const forkliftTaskQueue = [];
+const plotActionState = new Map();
+const queuedTaskKeys = new Set();
+const forkliftQueuedPlots = new Set();
+
+const workerAgents = [
+  { el: els.workerA, busy: false, homeX: 8, homeY: 62 },
+  { el: els.workerB, busy: false, homeX: 12, homeY: 64 }
+];
+
+let forkliftBusy = false;
+
+function queueWorkerTask(type, plotId, source = "otomatik") {
+  const key = `${type}:${plotId}`;
+  if (queuedTaskKeys.has(key) || plotActionState.has(plotId)) return false;
+
+  const plot = state.plots.find(p => p.id === plotId);
+  if (!plot) return false;
+  if (type === "plant" && plot.state !== "empty") return false;
+  if (type === "harvest" && plot.state !== "ready") return false;
+
+  queuedTaskKeys.add(key);
+  workerTaskQueue.push({ type, plotId, source, key });
+  return true;
+}
+
+function queueForkliftTask(plotId) {
+  if (forkliftQueuedPlots.has(plotId)) return false;
+  const plot = state.plots.find(p => p.id === plotId);
+  if (!plot || plot.state !== "harvested") return false;
+
+  forkliftQueuedPlots.add(plotId);
+  forkliftTaskQueue.push({ plotId });
+  return true;
+}
+
+function getPlotPosition(plotId) {
+  const plotEl = document.querySelector(`.plot[data-plot-id="${plotId}"]`);
+  const map = els.gameMap;
+  if (!plotEl || !map) return { x: 30, y: 30 };
+
+  const plotRect = plotEl.getBoundingClientRect();
+  const mapRect = map.getBoundingClientRect();
+
+  return {
+    x: ((plotRect.left + plotRect.width / 2 - mapRect.left) / mapRect.width) * 100,
+    y: ((plotRect.top + plotRect.height / 2 - mapRect.top) / mapRect.height) * 100
+  };
+}
+
+function moveAbsolute(el, from, to, duration = 1100) {
+  return new Promise(resolve => {
+    if (!el) return resolve();
+
+    el.style.left = `${from.x}%`;
+    el.style.top = `${from.y}%`;
+
+    const animation = el.animate(
+      [
+        { left: `${from.x}%`, top: `${from.y}%`, transform: "translate(-50%,-50%) scaleX(1)" },
+        { left: `${to.x}%`, top: `${to.y}%`, transform: `translate(-50%,-50%) scaleX(${to.x < from.x ? -1 : 1})` }
+      ],
+      {
+        duration,
+        easing: "ease-in-out",
+        fill: "forwards"
+      }
+    );
+
+    animation.onfinish = () => {
+      el.style.left = `${to.x}%`;
+      el.style.top = `${to.y}%`;
+      el.style.transform = `translate(-50%,-50%) scaleX(${to.x < from.x ? -1 : 1})`;
+      resolve();
+    };
+  });
+}
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function executeWorkerTask(agent, task) {
+  agent.busy = true;
+  agent.el?.classList.add("active-worker");
+
+  const label = task.type === "plant" ? "Fidan dikiliyor" : "Ağaç kesiliyor";
+  plotActionState.set(task.plotId, label);
+  renderPlots();
+
+  const target = getPlotPosition(task.plotId);
+  const start = {
+    x: parseFloat(agent.el?.style.left) || agent.homeX,
+    y: parseFloat(agent.el?.style.top) || agent.homeY
+  };
+
+  await moveAbsolute(agent.el, start, target, 1200);
+  await wait(850);
+
+  const plot = state.plots.find(p => p.id === task.plotId);
+
+  if (task.type === "plant" && plot?.state === "empty") {
+    if (state.money >= CONFIG.seedCost) {
+      state.money -= CONFIG.seedCost;
+      plot.state = "growing";
+      plot.plantedAt = Date.now();
+      plot.harvestedAt = null;
+      addLog(`${task.plotId + 1}. araziye işçi tarafından fidan dikildi.`);
+    }
+  }
+
+  if (task.type === "harvest" && plot?.state === "ready") {
+    plot.state = "harvested";
+    plot.plantedAt = null;
+    plot.harvestedAt = Date.now();
+    addLog(`${task.plotId + 1}. arazideki ağaç kesildi. Forklift çağrıldı.`);
+    queueForkliftTask(task.plotId);
+  }
+
+  plotActionState.delete(task.plotId);
+  queuedTaskKeys.delete(task.key);
+  render();
+
+  await moveAbsolute(agent.el, target, { x: agent.homeX, y: agent.homeY }, 1050);
+
+  agent.el?.classList.remove("active-worker");
+  agent.busy = false;
+
+  dispatchWorkerTasks();
+  dispatchForklift();
+}
+
+function dispatchWorkerTasks() {
+  for (const agent of workerAgents) {
+    if (agent.busy) continue;
+    const task = workerTaskQueue.shift();
+    if (!task) break;
+    executeWorkerTask(agent, task);
+  }
+}
+
+async function dispatchForklift() {
+  if (forkliftBusy || !forkliftTaskQueue.length || !els.forklift) return;
+
+  forkliftBusy = true;
+  const task = forkliftTaskQueue.shift();
+  const plot = state.plots.find(p => p.id === task.plotId);
+
+  if (!plot || plot.state !== "harvested") {
+    forkliftQueuedPlots.delete(task.plotId);
+    forkliftBusy = false;
+    return dispatchForklift();
+  }
+
+  els.forklift.classList.add("active");
+  els.forklift.classList.remove("carrying");
+
+  const factoryPos = { x: 78, y: 49 };
+  const target = getPlotPosition(task.plotId);
+
+  plotActionState.set(task.plotId, "Forklift geliyor");
+  renderPlots();
+
+  await moveAbsolute(els.forklift, factoryPos, target, 1500);
+  await wait(650);
+
+  els.forklift.classList.add("carrying");
+  plotActionState.set(task.plotId, "Kütükler yükleniyor");
+  renderPlots();
+  await wait(700);
+
+  plot.state = "empty";
+  plot.harvestedAt = null;
+  plotActionState.delete(task.plotId);
+  renderPlots();
+
+  await moveAbsolute(els.forklift, target, factoryPos, 1700);
+  await wait(300);
+
+  if (state.logs < CONFIG.logStorage) {
+    state.logs += 1;
+    addLog("Forklift 1 kütüğü fabrikaya teslim etti.");
+  } else {
+    addLog("Kütük deposu dolu olduğu için teslimat bekletildi.");
+  }
+
+  els.forklift.classList.remove("carrying");
+  els.forklift.classList.remove("active");
+
+  forkliftQueuedPlots.delete(task.plotId);
+  forkliftBusy = false;
+  render();
+
+  dispatchForklift();
+}
+
 const motionState = {
   start: performance.now(),
   lastFrame: performance.now()
@@ -656,8 +898,14 @@ function animateMachineLog(now) {
 }
 
 function motionLoop(now) {
-  animateWorker(els.workerA, 10, 0, now);
-  animateWorker(els.workerB, 11, 5.2, now);
+  if (!workerAgents[0].busy) {
+    els.workerA.style.left = `${workerAgents[0].homeX}%`;
+    els.workerA.style.top = `${workerAgents[0].homeY}%`;
+  }
+  if (!workerAgents[1].busy) {
+    els.workerB.style.left = `${workerAgents[1].homeX}%`;
+    els.workerB.style.top = `${workerAgents[1].homeY}%`;
+  }
   animateTruck(now);
   animateLog(els.movingLogA, 4.5, 0, now);
   animateLog(els.movingLogB, 4.5, 2.25, now);
@@ -687,7 +935,7 @@ motionDebug.textContent = "Canlı animasyon sistemi aktif";
 document.querySelector(".game-map")?.appendChild(motionDebug);
 
 if (!state.logsHistory.length) {
-  addLog("Ahşap Tycoon v0.5 başladı. İlk fidanını dik.");
+  addLog("Ahşap Tycoon v0.7 başladı. İlk fidanını dik.");
 }
 
 render();
@@ -695,6 +943,8 @@ render();
 setInterval(() => {
   updateGrowth();
   runForestAutomation();
+  dispatchWorkerTasks();
+  dispatchForklift();
   finishProcessing();
   paySalaries();
   updateProcessingUI();
